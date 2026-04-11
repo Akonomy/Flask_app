@@ -11,12 +11,19 @@ router = APIRouter(prefix="/sarcini", tags=["sarcini"])
 
 @router.get("")
 def obtine_sarcini(
+    doar_nefinalizate: bool = False,
     db: sqlite3.Connection = Depends(get_db),
     utilizator_curent=Depends(get_utilizator_curent),
 ):
-    sarcini = db.execute(
-        "SELECT * FROM sarcini WHERE utilizator_id = ?", (utilizator_curent["id"],)
-    ).fetchall()
+    if doar_nefinalizate:
+        sarcini = db.execute(
+            "SELECT * FROM sarcini WHERE utilizator_id = ? AND finalizata = 0",
+            (utilizator_curent["id"],),
+        ).fetchall()
+    else:
+        sarcini = db.execute(
+            "SELECT * FROM sarcini WHERE utilizator_id = ?", (utilizator_curent["id"],)
+        ).fetchall()
     return [dict(s) for s in sarcini]
 
 
@@ -50,6 +57,24 @@ def creeaza_sarcina(
         "SELECT * FROM sarcini WHERE id = ?", (cursor.lastrowid,)
     ).fetchone()
     return dict(sarcina_noua)
+
+
+@router.patch("/{sarcina_id}/finaliza")
+def finalizeaza_sarcina(
+    sarcina_id: int,
+    db: sqlite3.Connection = Depends(get_db),
+    utilizator_curent=Depends(get_utilizator_curent),
+):
+    sarcina = db.execute(
+        "SELECT * FROM sarcini WHERE id = ? AND utilizator_id = ?",
+        (sarcina_id, utilizator_curent["id"]),
+    ).fetchone()
+    if not sarcina:
+        raise HTTPException(status_code=404, detail="Sarcina nu a fost găsită.")
+
+    db.execute("UPDATE sarcini SET finalizata = 1 WHERE id = ?", (sarcina_id,))
+    db.commit()
+    return dict(db.execute("SELECT * FROM sarcini WHERE id = ?", (sarcina_id,)).fetchone())
 
 
 @router.put("/{sarcina_id}")
