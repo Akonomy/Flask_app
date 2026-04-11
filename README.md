@@ -1,5 +1,7 @@
 # Gestionar de sarcini — Lab 02 + Lab 03 + Lab 04
 
+**Repository:** [https://github.com/Akonomy/Flask_app](https://github.com/Akonomy/Flask_app)
+
 API REST construit cu FastAPI + SQLite, cu interfață web SPA. Acoperă trei laboratoare:
 - **Lab 02** — CRUD produse, in-memory, fără autentificare
 - **Lab 03** — Înregistrare/autentificare JWT, CRUD sarcini cu SQLite
@@ -31,7 +33,7 @@ API REST construit cu FastAPI + SQLite, cu interfață web SPA. Acoperă trei la
 **1. Clonează repository-ul**
 
 ```bash
-git clone <url-repo>
+git clone https://github.com/Akonomy/Flask_app
 cd Flask_app
 ```
 
