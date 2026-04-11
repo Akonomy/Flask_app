@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -60,8 +61,9 @@ ROUTES_HTML = """<!DOCTYPE html>
   <tr><td colspan="4"><strong>Lab 03 (extensie) — Filtrare și finalizare</strong></td></tr>
   <tr><td>Lab 03</td><td>GET</td><td>/sarcini?doar_nefinalizate=true</td><td>Lista sarcinilor nefinalizate ale utilizatorului curent</td></tr>
   <tr><td>Lab 03</td><td>PATCH</td><td>/sarcini/{id}/finaliza</td><td>Marchează sarcina ca finalizată</td></tr>
-  <tr><td colspan="4"><strong>Lab 04 — Interfață web</strong></td></tr>
-  <tr><td>Lab 04</td><td>GET</td><td><a href="/index.html">/index.html</a></td><td>Interfață web SPA (deschideți cu Live Server din VS Code)</td></tr>
+  <tr><td colspan="4"><strong>Lab 04 — Interfețe web</strong></td></tr>
+  <tr><td>Lab 04</td><td>GET</td><td><a href="/playground">/playground</a></td><td>API Playground — testare vizuală cu formulare, exemple și răspunsuri colorate</td></tr>
+  <tr><td>Lab 04</td><td>GET</td><td>/index.html</td><td>Aplicație SPA gestionar de sarcini (deschideți cu Live Server din VS Code)</td></tr>
 </table>
 </body>
 </html>"""
@@ -70,6 +72,11 @@ ROUTES_HTML = """<!DOCTYPE html>
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def index():
     return ROUTES_HTML
+
+
+@app.get("/playground", response_class=HTMLResponse, include_in_schema=False)
+def playground():
+    return Path("playground.html").read_text(encoding="utf-8")
 
 
 # Lab 02 — inventar produse (in-memory, fără auth)

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Playground</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .badge-get    { background:#198754; color:#fff; }
+        .badge-post   { background:#0d6efd; color:#fff; }
+        .badge-put    { background:#fd7e14; color:#fff; }
+        .badge-patch  { background:#ffc107; color:#000; }
+        .badge-delete { background:#dc3545; color:#fff; }
+        .method-badge { font-family:monospace; font-weight:700; font-size:.72rem;
+                        padding:2px 8px; border-radius:4px; letter-spacing:.5px; }
+        .route        { font-family:monospace; font-size:.9rem; }
+        .hint         { font-size:.78rem; color:#6c757d; margin-bottom:.3rem; }
+        .response-box { background:#1e1e1e; color:#d4d4d4; font-family:monospace;
+                        font-size:.8rem; border-radius:6px; padding:10px;
+                        white-space:pre-wrap; word-break:break-all;
+                        min-height:50px; max-height:280px; overflow-y:auto; }
+        .res-ok  { border-left:4px solid #198754; }
+        .res-err { border-left:4px solid #dc3545; }
+        .section-bar { border-left:4px solid #0d6efd; padding-left:10px; }
+        .card-header { padding:.5rem .75rem; }
+        body { background:#f4f6f9; }
+    </style>
+</head>
+<body>
+
+<!-- ── Navbar ─────────────────────────────────────────────────────── -->
+<nav class="navbar navbar-dark bg-dark sticky-top shadow-sm">
+    <div class="container-fluid">
+        <span class="navbar-brand fw-bold fs-5">API Playground</span>
+        <div class="d-flex align-items-center gap-3">
+            <span id="token-status" class="small text-secondary">Nu ești autentificat</span>
+            <button id="btn-clear" class="btn btn-outline-danger btn-sm d-none" onclick="clearToken()">
+                Deconectare
+            </button>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-4">
+
+    <!-- ════════════════════════════════════════════════════════════
+         LAB 02 — PRODUSE
+    ═════════════════════════════════════════════════════════════ -->
+    <h5 class="section-bar mb-3">
+        Lab 02 — Produse
+        <small class="text-muted fw-normal fs-6 ms-1">fără autentificare · in-memory</small>
+    </h5>
+    <div class="row g-3 mb-5">
+
+        <!-- GET /produse -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-get">GET</span>
+                    <span class="route">/produse</span>
+                    <span class="text-muted small ms-auto">lista produse</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Returnează toate produsele din memorie. Fără parametri.</p>
+                    <button class="btn btn-success btn-sm w-100"
+                            onclick="send('GET','/produse',null,'r1')">▶ Trimite</button>
+                    <div id="r1" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GET /produse/{id} -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-get">GET</span>
+                    <span class="route">/produse/{id}</span>
+                    <span class="text-muted small ms-auto">detalii produs</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Caută produsul după ID. Dacă nu există → 404.</p>
+                    <label class="hint">ID produs</label>
+                    <input type="number" id="f-g-pid" class="form-control form-control-sm mb-2" value="1">
+                    <button class="btn btn-success btn-sm w-100"
+                            onclick="send('GET','/produse/'+v('f-g-pid'),null,'r2')">▶ Trimite</button>
+                    <div id="r2" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- POST /produse -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-post">POST</span>
+                    <span class="route">/produse</span>
+                    <span class="text-muted small ms-auto">adaugă produs</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">ID-ul trebuie să fie unic. Stocul implicit e 0.</p>
+                    <div class="row g-1 mb-2">
+                        <div class="col-6">
+                            <label class="hint">ID</label>
+                            <input type="number" id="f-pp-id"   class="form-control form-control-sm" value="1">
+                        </div>
+                        <div class="col-6">
+                            <label class="hint">Stoc</label>
+                            <input type="number" id="f-pp-stoc" class="form-control form-control-sm" value="10">
+                        </div>
+                        <div class="col-6">
+                            <label class="hint">Nume</label>
+                            <input type="text"   id="f-pp-nume" class="form-control form-control-sm" value="Laptop">
+                        </div>
+                        <div class="col-6">
+                            <label class="hint">Preț (RON)</label>
+                            <input type="number" id="f-pp-pret" class="form-control form-control-sm" value="3500" step="0.01">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm w-100" onclick="postProdusSend()">▶ Trimite</button>
+                    <div id="r3" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PUT /produse/{id} -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-put">PUT</span>
+                    <span class="route">/produse/{id}</span>
+                    <span class="text-muted small ms-auto">actualizare completă</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Înlocuire completă — toate câmpurile sunt obligatorii.</p>
+                    <div class="row g-1 mb-2">
+                        <div class="col-6">
+                            <label class="hint">ID (URL)</label>
+                            <input type="number" id="f-pu-id"   class="form-control form-control-sm" value="1">
+                        </div>
+                        <div class="col-6">
+                            <label class="hint">Stoc</label>
+                            <input type="number" id="f-pu-stoc" class="form-control form-control-sm" value="5">
+                        </div>
+                        <div class="col-6">
+                            <label class="hint">Nume nou</label>
+                            <input type="text"   id="f-pu-nume" class="form-control form-control-sm" value="Laptop Pro">
+                        </div>
+                        <div class="col-6">
+                            <label class="hint">Preț nou</label>
+                            <input type="number" id="f-pu-pret" class="form-control form-control-sm" value="4200" step="0.01">
+                        </div>
+                    </div>
+                    <button class="btn btn-warning btn-sm w-100" onclick="putProdusSend()">▶ Trimite</button>
+                    <div id="r4" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DELETE /produse/{id} -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-delete">DELETE</span>
+                    <span class="route">/produse/{id}</span>
+                    <span class="text-muted small ms-auto">șterge produs</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Șterge produsul din memorie. Dacă nu există → 404.</p>
+                    <label class="hint">ID produs de șters</label>
+                    <input type="number" id="f-dp-id" class="form-control form-control-sm mb-2" value="1">
+                    <button class="btn btn-danger btn-sm w-100"
+                            onclick="send('DELETE','/produse/'+v('f-dp-id'),null,'r5')">▶ Trimite</button>
+                    <div id="r5" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         LAB 03 — AUTENTIFICARE
+    ═════════════════════════════════════════════════════════════ -->
+    <h5 class="section-bar mb-3">
+        Lab 03 — Autentificare
+        <small class="text-muted fw-normal fs-6 ms-1">JWT · SQLite</small>
+    </h5>
+    <div class="row g-3 mb-4">
+
+        <!-- POST /inregistrare -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-post">POST</span>
+                    <span class="route">/inregistrare</span>
+                    <span class="text-muted small ms-auto">cont nou</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Email valid + parolă minim 8 caractere. Dacă email-ul există → 400.</p>
+                    <label class="hint">Email</label>
+                    <input type="email" id="f-reg-email"  class="form-control form-control-sm mb-1" value="test@exemplu.com">
+                    <label class="hint">Parolă</label>
+                    <input type="password" id="f-reg-pw" class="form-control form-control-sm mb-2" value="parola123">
+                    <button class="btn btn-primary btn-sm w-100" onclick="inregistrareSend()">▶ Înregistrează</button>
+                    <div id="r6" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- POST /autentificare -->
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-header bg-primary text-white d-flex align-items-center gap-2">
+                    <span class="method-badge bg-white text-primary">POST</span>
+                    <span class="route">/autentificare</span>
+                    <span class="small ms-auto">⭐ obține token JWT</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Tokenul se salvează automat și va fi folosit pentru toate cererile de sarcini de mai jos.</p>
+                    <label class="hint">Email</label>
+                    <input type="email"    id="f-auth-email" class="form-control form-control-sm mb-1" value="test@exemplu.com">
+                    <label class="hint">Parolă</label>
+                    <input type="password" id="f-auth-pw"    class="form-control form-control-sm mb-2" value="parola123">
+                    <button class="btn btn-primary btn-sm w-100" onclick="autentificareSend()">
+                        ▶ Autentifică și salvează token
+                    </button>
+                    <div id="r7" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         LAB 03 — SARCINI
+    ═════════════════════════════════════════════════════════════ -->
+    <h5 class="section-bar mb-2">
+        Lab 03 — Sarcini
+        <small class="text-muted fw-normal fs-6 ms-1">necesită autentificare</small>
+    </h5>
+    <div id="jwt-warn" class="alert alert-warning py-2 mb-3">
+        ⚠️ Nu ești autentificat — autentifică-te mai sus pentru a trimite cereri la sarcini.
+    </div>
+    <div class="row g-3 mb-5">
+
+        <!-- GET /sarcini -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-get">GET</span>
+                    <span class="route">/sarcini</span>
+                    <span class="text-muted small ms-auto">lista sarcinilor</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Returnează sarcinile utilizatorului autentificat.</p>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="f-gs-nefin">
+                        <label class="form-check-label hint" for="f-gs-nefin">
+                            <code>?doar_nefinalizate=true</code>
+                        </label>
+                    </div>
+                    <button class="btn btn-success btn-sm w-100" onclick="getSarciniSend()">▶ Trimite</button>
+                    <div id="r8" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- GET /sarcini/{id} -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-get">GET</span>
+                    <span class="route">/sarcini/{id}</span>
+                    <span class="text-muted small ms-auto">detalii sarcină</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Sarcina trebuie să aparțină utilizatorului curent, altfel → 404.</p>
+                    <label class="hint">ID sarcină</label>
+                    <input type="number" id="f-gs-id" class="form-control form-control-sm mb-2" value="1">
+                    <button class="btn btn-success btn-sm w-100"
+                            onclick="send('GET','/sarcini/'+v('f-gs-id'),null,'r9',true)">▶ Trimite</button>
+                    <div id="r9" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- POST /sarcini -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-post">POST</span>
+                    <span class="route">/sarcini</span>
+                    <span class="text-muted small ms-auto">creare sarcină</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Titlul este obligatoriu. Descrierea e opțională.</p>
+                    <label class="hint">Titlu</label>
+                    <input type="text" id="f-ps-titlu" class="form-control form-control-sm mb-1" value="Cumpărături">
+                    <label class="hint">Descriere (opțional)</label>
+                    <input type="text" id="f-ps-desc"  class="form-control form-control-sm mb-2" value="Lapte, pâine, ouă">
+                    <button class="btn btn-primary btn-sm w-100" onclick="postSarcinaSend()">▶ Trimite</button>
+                    <div id="r10" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PUT /sarcini/{id} -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-put">PUT</span>
+                    <span class="route">/sarcini/{id}</span>
+                    <span class="text-muted small ms-auto">actualizare sarcină</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Câmpurile sunt opționale — lasă gol ce nu vrei să modifici.</p>
+                    <label class="hint">ID sarcină</label>
+                    <input type="number" id="f-pu-sid"   class="form-control form-control-sm mb-1" value="1">
+                    <label class="hint">Titlu nou</label>
+                    <input type="text"   id="f-pu-stitlu" class="form-control form-control-sm mb-1" value="Cumpărături săptămânale">
+                    <label class="hint">Descriere nouă</label>
+                    <input type="text"   id="f-pu-sdesc"  class="form-control form-control-sm mb-2" value="Lapte, pâine, ouă, brânză">
+                    <button class="btn btn-warning btn-sm w-100" onclick="putSarcinaSend()">▶ Trimite</button>
+                    <div id="r11" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PATCH /sarcini/{id}/finaliza -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-patch">PATCH</span>
+                    <span class="route">/sarcini/{id}/finaliza</span>
+                    <span class="text-muted small ms-auto">finalizare</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Marchează sarcina ca finalizată. Fără corp — doar ID în URL.</p>
+                    <label class="hint">ID sarcină</label>
+                    <input type="number" id="f-pa-id" class="form-control form-control-sm mb-2" value="1">
+                    <button class="btn btn-warning btn-sm w-100"
+                            onclick="send('PATCH','/sarcini/'+v('f-pa-id')+'/finaliza',null,'r12',true)">▶ Trimite</button>
+                    <div id="r12" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DELETE /sarcini/{id} -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center gap-2">
+                    <span class="method-badge badge-delete">DELETE</span>
+                    <span class="route">/sarcini/{id}</span>
+                    <span class="text-muted small ms-auto">ștergere sarcină</span>
+                </div>
+                <div class="card-body">
+                    <p class="hint">Șterge sarcina. Trebuie să aparțină utilizatorului curent.</p>
+                    <label class="hint">ID sarcină de șters</label>
+                    <input type="number" id="f-ds-id" class="form-control form-control-sm mb-2" value="1">
+                    <button class="btn btn-danger btn-sm w-100"
+                            onclick="send('DELETE','/sarcini/'+v('f-ds-id'),null,'r13',true)">▶ Trimite</button>
+                    <div id="r13" class="response-box mt-2 d-none"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div><!-- /container -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = "http://localhost:8090";
+let token = localStorage.getItem("pg_token");
+updateNav();
+
+// ── UI helpers ───────────────────────────────────────────────────────────────
+
+function updateNav() {
+    const status = document.getElementById("token-status");
+    const btn    = document.getElementById("btn-clear");
+    const warn   = document.getElementById("jwt-warn");
+    if (token) {
+        try {
+            const p = JSON.parse(atob(token.split(".")[1]));
+            status.innerHTML = `<span class="text-success fw-bold">✔ ${p.sub}</span>`;
+        } catch { status.innerHTML = `<span class="text-success">✔ Autentificat</span>`; }
+        btn.classList.remove("d-none");
+        warn.classList.add("d-none");
+    } else {
+        status.innerHTML = `<span class="text-secondary">Nu ești autentificat</span>`;
+        btn.classList.add("d-none");
+        warn.classList.remove("d-none");
+    }
+}
+
+function clearToken() {
+    token = null;
+    localStorage.removeItem("pg_token");
+    updateNav();
+}
+
+function v(id) { return document.getElementById(id).value.trim(); }
+
+function showRes(boxId, status, data) {
+    const box = document.getElementById(boxId);
+    box.classList.remove("d-none", "res-ok", "res-err");
+    box.classList.add(status >= 200 && status < 300 ? "res-ok" : "res-err");
+    const col  = status >= 200 && status < 300 ? "#4ec9b0" : "#f48771";
+    const body = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    box.innerHTML = `<span style="color:${col};font-weight:bold">HTTP ${status || "ERR"}</span>\n\n`
+                  + body.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// ── Generic fetch ─────────────────────────────────────────────────────────────
+
+async function send(method, path, body, boxId, useToken = false) {
+    const headers = { "Content-Type": "application/json" };
+    if (useToken && token) headers["Authorization"] = "Bearer " + token;
+    try {
+        const opts = { method, headers };
+        if (body !== null) opts.body = JSON.stringify(body);
+        const r = await fetch(API + path, opts);
+        let data;
+        try { data = await r.json(); } catch { data = await r.text(); }
+        showRes(boxId, r.status, data);
+    } catch(e) {
+        showRes(boxId, 0, "Nu se poate contacta serverul.\n" + e.message);
+    }
+}
+
+// ── Lab 02 ────────────────────────────────────────────────────────────────────
+
+function postProdusSend() {
+    send("POST", "/produse", {
+        id:   +v("f-pp-id"),
+        nume:  v("f-pp-nume"),
+        pret: +v("f-pp-pret"),
+        stoc: +v("f-pp-stoc"),
+    }, "r3");
+}
+
+function putProdusSend() {
+    const id = v("f-pu-id");
+    send("PUT", "/produse/" + id, {
+        id:   +id,
+        nume:  v("f-pu-nume"),
+        pret: +v("f-pu-pret"),
+        stoc: +v("f-pu-stoc"),
+    }, "r4");
+}
+
+// ── Lab 03 auth ───────────────────────────────────────────────────────────────
+
+function inregistrareSend() {
+    send("POST", "/inregistrare", {
+        email:  v("f-reg-email"),
+        parola: v("f-reg-pw"),
+    }, "r6");
+}
+
+async function autentificareSend() {
+    const form = new URLSearchParams();
+    form.append("username", v("f-auth-email"));
+    form.append("password", v("f-auth-pw"));
+    try {
+        const r = await fetch(API + "/autentificare", { method:"POST", body: form });
+        let data;
+        try { data = await r.json(); } catch { data = await r.text(); }
+        if (r.ok && data.access_token) {
+            token = data.access_token;
+            localStorage.setItem("pg_token", token);
+            updateNav();
+        }
+        showRes("r7", r.status, data);
+    } catch(e) {
+        showRes("r7", 0, "Nu se poate contacta serverul.\n" + e.message);
+    }
+}
+
+// ── Lab 03 sarcini ────────────────────────────────────────────────────────────
+
+function getSarciniSend() {
+    const nefin = document.getElementById("f-gs-nefin").checked;
+    send("GET", "/sarcini" + (nefin ? "?doar_nefinalizate=true" : ""), null, "r8", true);
+}
+
+function postSarcinaSend() {
+    send("POST", "/sarcini", {
+        titlu:    v("f-ps-titlu"),
+        descriere: v("f-ps-desc") || null,
+    }, "r10", true);
+}
+
+function putSarcinaSend() {
+    const id    = v("f-pu-sid");
+    const body  = {};
+    const titlu = v("f-pu-stitlu");
+    const desc  = v("f-pu-sdesc");
+    if (titlu) body.titlu    = titlu;
+    if (desc)  body.descriere = desc;
+    send("PUT", "/sarcini/" + id, body, "r11", true);
+}
+</script>
+</body>
+</html>

@@ -589,13 +589,49 @@ Adaugă încă 2 sarcini pentru a testa toate funcționalitățile:
 
 ---
 
-## 6. Referință rapidă endpoint-uri
+## 6. API Playground
+
+Pe lângă Swagger UI, aplicația include un **API Playground** propriu, accesibil direct din browser fără instalare suplimentară.
+
+**Adresă:** [http://localhost:8090/playground](http://localhost:8090/playground)
+
+### Ce oferă
+
+- **Formulare pre-completate** cu exemple pentru fiecare endpoint — modifici doar ce ai nevoie
+- **Badge-uri colorate** per metodă HTTP (GET verde, POST albastru, PUT portocaliu, PATCH galben, DELETE roșu)
+- **Token JWT automat** — după autentificare tokenul se salvează și este trimis automat la toate cererile protejate; nu mai trebuie copiat manual
+- **Răspuns vizibil pe loc** — fiecare card afișează răspunsul serverului cu bordură verde (2xx) sau roșie (4xx/5xx) și codul HTTP
+- **Avertisment vizibil** dacă încerci să trimiți cereri la sarcini fără să fii autentificat
+- **Deconectare** din navbar — șterge tokenul salvat
+
+### Flux recomandat în Playground
+
+1. Pornește serverul: `./start.sh`
+2. Deschide [http://localhost:8090/playground](http://localhost:8090/playground)
+3. **Lab 02** — testează produsele direct, fără autentificare
+4. **Lab 03** — înregistrează un cont (cardul `POST /inregistrare`), apoi autentifică-te (cardul `POST /autentificare`) — tokenul apare în navbar
+5. **Lab 03 sarcini** — toate cardurile de sarcini folosesc automat tokenul salvat
+
+### Diferență față de Swagger UI
+
+| | Swagger UI | API Playground |
+|---|---|---|
+| Adresă | `/docs` | `/playground` |
+| Token JWT | Introdus manual la `Authorize` | Salvat automat la login |
+| Exemple pre-completate | Nu | Da |
+| Răspuns vizibil inline | Nu | Da, pe fiecare card |
+| Scop | Documentație + testare tehnică | Testare rapidă fără configurare |
+
+---
+
+## 7. Referință rapidă endpoint-uri
 
 | Lab | Metodă | Endpoint | Auth | Descriere |
 |-----|--------|----------|------|-----------|
 | — | GET | `/` | Nu | Pagina cu toate rutele |
 | — | GET | `/docs` | Nu | Swagger UI |
 | — | GET | `/redoc` | Nu | ReDoc |
+| — | GET | `/playground` | Nu | API Playground cu formulare |
 | Lab 02 | GET | `/produse` | Nu | Lista produselor |
 | Lab 02 | GET | `/produse/{id}` | Nu | Detalii produs |
 | Lab 02 | POST | `/produse` | Nu | Adăugare produs |
@@ -610,4 +646,5 @@ Adaugă încă 2 sarcini pentru a testa toate funcționalitățile:
 | Lab 03 | PUT | `/sarcini/{id}` | JWT | Actualizare sarcină |
 | Lab 03 | PATCH | `/sarcini/{id}/finaliza` | JWT | Marcare finalizată |
 | Lab 03 | DELETE | `/sarcini/{id}` | JWT | Ștergere sarcină |
+| Lab 04 | — | `/playground` | Nu | API Playground |
 | Lab 04 | — | `index.html` | — | Interfață web SPA |
