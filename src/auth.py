@@ -1,10 +1,10 @@
 import sqlite3
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
 
 from .database import get_db
 
@@ -12,16 +12,15 @@ SECRET_KEY = "cheie-secreta-foarte-lunga-schimbati-obligatoriu-in-productie"
 ALGORITHM = "HS256"
 EXPIRARE_TOKEN_MINUTE = 30
 
-context_parola = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_schema = OAuth2PasswordBearer(tokenUrl="autentificare")
 
 
 def hasheaza_parola(parola: str) -> str:
-    return context_parola.hash(parola)
+    return bcrypt.hashpw(parola.encode(), bcrypt.gensalt()).decode()
 
 
 def verifica_parola(parola: str, hash_parola: str) -> bool:
-    return context_parola.verify(parola, hash_parola)
+    return bcrypt.checkpw(parola.encode(), hash_parola.encode())
 
 
 def creeaza_token(date: dict) -> str:
