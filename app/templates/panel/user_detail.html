@@ -1,0 +1,186 @@
+{% extends 'panel/base.html' %}
+{% block title %}Utilizator {{ user.username }}{% endblock %}
+{% block panel_title %}Utilizator: {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- User info -->
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body text-center py-4">
+        <i class="bi bi-person-circle text-primary" style="font-size:4rem"></i>
+        <h5 class="fw-bold mt-2 mb-1">{{ user.username }}</h5>
+        <p class="text-muted mb-2">{{ user.email }}</p>
+        {% set role_colors = {'developer': 'warning text-dark', 'admin': 'danger', 'manager': 'primary', 'user': 'secondary'} %}
+        <span class="badge bg-{{ role_colors.get(user.role, 'secondary') }} mb-2">{{ user.role }}</span>
+        <div class="fs-4 fw-bold text-primary mb-1">
+          {{ user.display_coins }} <i class="bi bi-coin"></i>
+        </div>
+        <div class="text-muted small mb-2">Coins</div>
+        <div class="text-muted small">
+          Înregistrat: {{ user.created_at.strftime('%d.%m.%Y') }}
+        </div>
+        {% if user.deleted_at %}
+        <div class="mt-2">
+          <span class="badge bg-danger">Marcat pentru ștergere</span>
+          <div class="text-muted small mt-1">{{ user.deleted_at | ro_time }}</div>
+          <form method="post" action="{{ url_for('panel.reactivate_user', user_id=user.id) }}" class="mt-2">
+            <button type="submit" class="btn btn-success btn-sm w-100">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>Reactivează contul
+            </button>
+          </form>
+        </div>
+        {% elif not user.is_active %}
+        <span class="badge bg-danger mt-2">Cont dezactivat</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Coins management -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header fw-semibold border-bottom bg-transparent">
+        <i class="bi bi-coin me-2"></i>Gestionare coins
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('panel.user_coins', user_id=user.id) }}" class="mb-2">
+          <div class="input-group input-group-sm">
+            <input type="number" name="amount" class="form-control" placeholder="Sumă" min="1" required>
+            <button type="submit" name="action" value="add" class="btn btn-success">
+              <i class="bi bi-plus"></i>
+            </button>
+            <button type="submit" name="action" value="remove" class="btn btn-danger">
+              <i class="bi bi-dash"></i>
+            </button>
+          </div>
+          <div class="form-text">+ adaugă / − elimină coins</div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Role management -->
+    {% if user.id != current_user.id %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header fw-semibold border-bottom bg-transparent">
+        <i class="bi bi-shield me-2"></i>Schimbă rolul
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('panel.user_role', user_id=user.id) }}">
+          <select name="role" class="form-select form-select-sm mb-2">
+            {% for role in roles %}
+            {% if current_user.role == 'developer' or role != 'developer' %}
+            <option value="{{ role }}" {{ 'selected' if role == user.role }}>{{ role }}</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-warning btn-sm w-100">
+            <i class="bi bi-check me-1"></i>Aplică rol
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Developer settings -->
+    {% if current_user.role == 'developer' and user.role == 'developer' %}
+    <div class="card border-0 shadow-sm mb-4 border-warning">
+      <div class="card-header fw-semibold border-bottom bg-warning bg-opacity-10">
+        <i class="bi bi-cpu me-2 text-warning"></i>Setări developer
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('panel.developer_settings', user_id=user.id) }}">
+          <div class="form-check form-switch mb-2">
+            <input class="form-check-input" type="checkbox" name="unlimited" id="unlimitedSwitch"
+                   {{ 'checked' if user.developer_unlimited }}>
+            <label class="form-check-label" for="unlimitedSwitch">Coins nelimitate (∞)</label>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small">Limită coins (dacă nu nelimitat)</label>
+            <input type="number" name="coin_limit" class="form-control form-control-sm"
+                   value="{{ user.developer_coin_limit or '' }}" placeholder="ex: 99999">
+          </div>
+          <button type="submit" class="btn btn-warning btn-sm w-100">
+            <i class="bi bi-save me-1"></i>Salvează
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Give coupon -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header fw-semibold border-bottom bg-transparent">
+        <i class="bi bi-ticket-perforated me-2"></i>Acordă cupon
+      </div>
+      <div class="card-body">
+        <form method="post" action="{{ url_for('panel.give_coupon_to_user', user_id=user.id) }}">
+          <select name="coupon_id" class="form-select form-select-sm mb-2">
+            <option value="">Selectează cupon…</option>
+            {% for c in coupons %}
+            {% if c.is_valid %}
+            <option value="{{ c.id }}">{{ c.code }} (+{{ c.coin_value }} coins)</option>
+            {% endif %}
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-success btn-sm w-100">
+            <i class="bi bi-gift me-1"></i>Acordă cupon
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toggle active -->
+    {% if user.id != current_user.id %}
+    <form method="post" action="{{ url_for('panel.toggle_user', user_id=user.id) }}">
+      <button type="submit"
+              class="btn btn-sm w-100 {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+              onclick="return confirm('Ești sigur?')">
+        <i class="bi bi-{% if user.is_active %}person-x{% else %}person-check{% endif %} me-1"></i>
+        {{ 'Dezactivează cont' if user.is_active else 'Activează cont' }}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <!-- Recent orders -->
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header fw-semibold border-bottom bg-transparent">
+        <i class="bi bi-bag me-2"></i>Ultimele comenzi
+        <span class="badge bg-primary ms-2">{{ user.total_orders }} total</span>
+      </div>
+      <div class="card-body p-0">
+        {% if orders %}
+        <div class="table-responsive">
+          <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr><th>#</th><th>Data</th><th>Produse</th><th>Total</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+              {% for order in orders %}
+              <tr>
+                <td><strong>#{{ order.id }}</strong></td>
+                <td class="small text-muted">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+                <td class="small">{{ order.items|list|length }} prod.</td>
+                <td>{{ order.total_coins }} <i class="bi bi-coin text-warning small"></i></td>
+                <td><span class="badge bg-{{ order.status_color }}">{{ order.status_display }}</span></td>
+                <td>
+                  <a href="{{ url_for('panel.order_detail', order_id=order.id) }}"
+                     class="btn btn-outline-primary btn-sm">Detalii</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-muted text-center py-4">Nicio comandă.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<a href="{{ url_for('panel.users') }}" class="btn btn-outline-secondary mt-3">
+  <i class="bi bi-arrow-left me-1"></i>Înapoi la utilizatori
+</a>
+{% endblock %}

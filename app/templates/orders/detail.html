@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}Comanda #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:850px">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0">
+      Comanda #{{ order.id }}
+      {% if order.is_express %}
+      <span class="badge bg-danger ms-2 fs-6">Express</span>
+      {% endif %}
+    </h2>
+    <a href="{{ url_for('orders.history') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Înapoi
+    </a>
+  </div>
+
+  <!-- Status + timeline -->
+  <div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Status comandă</h5>
+        <span class="badge bg-{{ order.status_color }} fs-6 px-3 py-2">{{ order.status_display }}</span>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="progress mb-3" style="height:8px">
+        {% set progress = {'pending': 10, 'processing': 35, 'shipped': 68, 'delivered': 100, 'cancelled': 0} %}
+        <div class="progress-bar bg-{{ order.status_color }}"
+             style="width:{{ progress.get(order.status, 0) }}%"></div>
+      </div>
+
+      <!-- Status history timeline -->
+      <ul class="list-unstyled mb-0">
+        {% for h in order.status_history %}
+        {% set colors = {'pending': 'warning', 'processing': 'info', 'shipped': 'primary', 'delivered': 'success', 'cancelled': 'danger'} %}
+        {% set icons = {'pending': 'bi-clock', 'processing': 'bi-gear', 'shipped': 'bi-truck', 'delivered': 'bi-check-circle-fill', 'cancelled': 'bi-x-circle'} %}
+        <li class="d-flex align-items-start gap-3 mb-2">
+          <div class="mt-1">
+            <i class="bi {{ icons.get(h.status, 'bi-circle') }} text-{{ colors.get(h.status, 'secondary') }} fs-5"></i>
+          </div>
+          <div class="flex-grow-1">
+            <div class="fw-semibold small">{{ order.STATUS_LABELS.get(h.status, ('',''))[0] }}</div>
+            <div class="text-muted" style="font-size:.8rem">{{ h.changed_at | ro_time }}</div>
+            {% if h.note %}
+            <div class="text-muted" style="font-size:.78rem">{{ h.note }}</div>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+        {% if not order.status_history %}
+        <li class="text-muted small">Niciun históric disponibil.</li>
+        {% endif %}
+      </ul>
+
+      <!-- Estimated delivery -->
+      {% if order.estimated_delivery_at and order.status not in ('delivered', 'cancelled') %}
+      <div class="alert alert-info mt-3 mb-0 d-flex align-items-center gap-2 small">
+        <i class="bi bi-clock-history fs-5"></i>
+        <div>
+          <strong>Timp estimat livrare:</strong> {{ order.estimated_delivery_at | ro_time }}
+          {% if order.is_express %}<span class="badge bg-danger ms-1">Express</span>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if order.tracking_notes %}
+      <div class="alert alert-secondary mt-3 mb-0 small">
+        <i class="bi bi-info-circle me-2"></i>{{ order.tracking_notes }}
+      </div>
+      {% endif %}
+
+      <!-- Manual advance -->
+      {% if order.status not in ('delivered', 'cancelled') %}
+      <div class="mt-3 d-flex gap-2 flex-wrap">
+        <form method="post" action="{{ url_for('orders.advance', order_id=order.id) }}">
+          <button type="submit" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-skip-forward me-1"></i>Avansează manual
+          </button>
+        </form>
+        {% if current_user.role_level >= 2 %}
+        <a href="{{ url_for('panel.order_detail', order_id=order.id) }}"
+           class="btn btn-sm btn-outline-secondary">
+          <i class="bi bi-pencil me-1"></i>Editează în panou
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Items -->
+    <div class="col-md-7">
+      <div class="card shadow-sm border-0">
+        <div class="card-header fw-semibold">
+          <i class="bi bi-box-seam me-2"></i>Produse comandate
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            {% for item in order.items %}
+            <li class="list-group-item">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <a href="{{ url_for('products.detail', product_id=item.product_id) }}"
+                     class="fw-semibold text-decoration-none">
+                    {{ item.product.name if item.product else 'Produs șters' }}
+                  </a>
+                  <div class="text-muted small">{{ item.quantity }} × {{ item.price_at_purchase }} coins</div>
+                </div>
+                <span class="fw-bold">{{ item.subtotal }} <i class="bi bi-coin text-warning"></i></span>
+              </div>
+            </li>
+            {% endfor %}
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="text-muted">Subtotal produse</span>
+              <span class="fw-semibold">{{ order.total_coins }} <i class="bi bi-coin text-warning"></i></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between">
+              <span class="text-muted">
+                Livrare {% if order.is_express %}<span class="badge bg-danger">Express</span>{% endif %}
+              </span>
+              <span class="fw-semibold">{{ order.delivery_cost or 15 }} <i class="bi bi-coin text-warning"></i></span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between fw-bold">
+              <span>Total plătit</span>
+              <span class="text-primary fs-5">{{ order.grand_total }} <i class="bi bi-coin"></i></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delivery info -->
+    <div class="col-md-5">
+      <div class="card shadow-sm border-0">
+        <div class="card-header fw-semibold">
+          <i class="bi bi-geo-alt me-2"></i>Date livrare
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-4 text-muted small">Nume</dt>
+            <dd class="col-sm-8">{{ order.delivery_name }}</dd>
+            <dt class="col-sm-4 text-muted small">Adresă</dt>
+            <dd class="col-sm-8">{{ order.delivery_address }}</dd>
+            <dt class="col-sm-4 text-muted small">Oraș</dt>
+            <dd class="col-sm-8">{{ order.delivery_city }}</dd>
+            <dt class="col-sm-4 text-muted small">Telefon</dt>
+            <dd class="col-sm-8">{{ order.delivery_phone }}</dd>
+            <dt class="col-sm-4 text-muted small">Plasată</dt>
+            <dd class="col-sm-8 small">{{ order.created_at | ro_time }}</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

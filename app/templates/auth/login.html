@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Autentificare{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card shadow border-0">
+        <div class="card-header bg-primary text-white text-center py-4">
+          <i class="bi bi-box-arrow-in-right fs-2 d-block mb-2"></i>
+          <h4 class="mb-0 fw-bold">Autentificare</h4>
+        </div>
+        <div class="card-body p-4">
+
+          {% if locked_identifier %}
+          <!-- Lockout state -->
+          <div class="alert alert-danger d-flex gap-3 align-items-start">
+            <i class="bi bi-shield-lock-fill fs-4 flex-shrink-0 mt-1"></i>
+            <div>
+              <strong>Cont blocat temporar</strong>
+              <p class="mb-1 small">Prea multe încercări eșuate cu numele de utilizator <strong>{{ locked_identifier }}</strong>.</p>
+              <p class="mb-0 small">Poți continua cu <strong>adresa de email</strong> sau contactează un administrator la:
+                <a href="mailto:{{ contact_email }}" class="fw-semibold">{{ contact_email }}</a>
+              </p>
+            </div>
+          </div>
+          {% endif %}
+
+          <form method="post" novalidate>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Email sau nume utilizator</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-circle"></i></span>
+                <input type="text" name="identifier" class="form-control"
+                       placeholder="email@exemplu.ro sau numetau"
+                       value="{{ locked_identifier or '' }}"
+                       required autocomplete="username">
+              </div>
+              <div class="form-text text-muted small">
+                <i class="bi bi-info-circle me-1"></i>
+                Autentificarea cu email nu are limită de încercări.
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Parolă</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" name="password" class="form-control" placeholder="Parola ta"
+                       required autocomplete="current-password">
+              </div>
+            </div>
+            <div class="mb-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="remember" id="remember">
+                <label class="form-check-label" for="remember">Ține-mă conectat</label>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+              <i class="bi bi-box-arrow-in-right me-2"></i>Autentifică-te
+            </button>
+          </form>
+        </div>
+        <div class="card-footer text-center py-3">
+          <small class="text-muted">Nu ai cont?
+            <a href="{{ url_for('auth.register') }}" class="text-primary fw-semibold">Înregistrează-te</a>
+            și primești 100 coins!
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

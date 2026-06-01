@@ -1,0 +1,212 @@
+/* ── Variables ─────────────────────────────────────────────────────────── */
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --surface: #ffffff;
+  --bg: #f8f9fa;
+}
+
+/* ── Global ────────────────────────────────────────────────────────────── */
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg);
+}
+
+/* ── Navbar ────────────────────────────────────────────────────────────── */
+.navbar.bg-primary {
+  background-color: var(--primary) !important;
+}
+
+.navbar-brand {
+  font-size: 1.3rem;
+  letter-spacing: -0.03em;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+.hero-section {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 60%, #312e81 100%);
+  padding: 4rem 0;
+}
+
+/* ── Product cards ─────────────────────────────────────────────────────── */
+.product-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.product-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+}
+
+.product-img-wrap {
+  position: relative;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.product-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.product-card:hover .product-img {
+  transform: scale(1.05);
+}
+
+.product-img-placeholder {
+  height: 200px;
+  width: 100%;
+}
+
+/* ── Panel sidebar ─────────────────────────────────────────────────────── */
+.panel-body {
+  background-color: #f1f3f5;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sidebar-header {
+  background: rgba(255,255,255,0.05);
+}
+
+.sidebar-link {
+  border-radius: 8px;
+  margin: 0 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff !important;
+}
+
+.sidebar-link.active {
+  background: var(--primary);
+  color: #fff !important;
+}
+
+/* ── About page ────────────────────────────────────────────────────────── */
+.about-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.15);
+}
+
+.about-stat-box {
+  background: var(--bg);
+  transition: background 0.15s;
+}
+
+.about-stat-box:hover {
+  background: #e9ecef;
+}
+
+/* ── Badges and chips ──────────────────────────────────────────────────── */
+.badge {
+  font-weight: 500;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────── */
+.table > :not(caption) > * > * {
+  padding: 0.75rem 1rem;
+}
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+.card {
+  border-radius: 12px;
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────── */
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* ── Forms ──────────────────────────────────────────────────────────────── */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.2);
+}
+
+/* ── Game page ──────────────────────────────────────────────────────────── */
+.game-range-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: linear-gradient(to right, #6366f1, #22c55e);
+}
+
+/* ── Responsive tweaks ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: relative;
+    height: auto;
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  .hero-section {
+    padding: 2.5rem 0;
+  }
+}
+
+/* ── Coin icon color ────────────────────────────────────────────────────── */
+.bi-coin {
+  color: #f59e0b;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  animation: fadeIn 0.25s ease-out;
+}
+
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+/* ── Dark mode overrides ─────────────────────────────────────────────────── */
+[data-bs-theme="dark"] {
+  --bg: #1c1e21;
+  --surface: #2c2f33;
+}
+[data-bs-theme="dark"] body { background-color: var(--bg); }
+[data-bs-theme="dark"] .panel-body { background-color: #141618; }
+[data-bs-theme="dark"] .product-img-wrap { background: #2c2f33; }
+[data-bs-theme="dark"] .about-stat-box { background: #2c2f33; }
+[data-bs-theme="dark"] .about-stat-box:hover { background: #3a3d42; }
+[data-bs-theme="dark"] ::-webkit-scrollbar-thumb { background: #4a5568; }

@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+{% block title %}Profilul meu{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h3 class="fw-bold mb-4"><i class="bi bi-person-gear me-2 text-primary"></i>Profilul meu</h3>
+
+  <div class="row g-4">
+
+    <!-- Left column: info + stats -->
+    <div class="col-lg-4">
+
+      <!-- Profile card -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body text-center py-4">
+          <i class="bi bi-person-circle text-primary" style="font-size:4rem"></i>
+          <h5 class="fw-bold mt-2 mb-1">{{ current_user.username }}</h5>
+          <p class="text-muted mb-2">{{ current_user.email }}</p>
+          {% set role_colors = {'developer': 'warning text-dark', 'admin': 'danger', 'manager': 'primary', 'user': 'secondary'} %}
+          <span class="badge bg-{{ role_colors.get(current_user.role, 'secondary') }} mb-2 px-3">
+            {{ current_user.role }}
+          </span>
+          <div class="fs-3 fw-bold text-primary mt-2">
+            {{ current_user.display_coins }} <i class="bi bi-coin text-warning"></i>
+          </div>
+          <div class="text-muted small">coins disponibili</div>
+          <hr class="my-3">
+          <div class="text-muted small">
+            <i class="bi bi-calendar3 me-1"></i>
+            Membru din {{ current_user.created_at | ro_time }}
+          </div>
+          <hr class="my-3">
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm w-100">
+            <i class="bi bi-box-arrow-right me-2"></i>Deconectare
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats card -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header fw-semibold bg-transparent border-bottom">
+          <i class="bi bi-bar-chart me-2 text-primary"></i>Statistici
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted small"><i class="bi bi-controller me-2"></i>Jocuri jucate</span>
+              <strong>{{ current_user.games_played or 0 }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted small"><i class="bi bi-trophy me-2 text-warning"></i>Jocuri câștigate</span>
+              <strong>{{ current_user.games_won or 0 }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted small"><i class="bi bi-percent me-2"></i>Rată succes</span>
+              <strong>{{ win_rate }}%</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted small"><i class="bi bi-coin me-2 text-warning"></i>Coins câștigați din joc</span>
+              <strong>{{ current_user.coins_from_games or 0 }}</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted small"><i class="bi bi-bag me-2"></i>Comenzi plasate</span>
+              <strong>{{ current_user.total_orders }}</strong>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right column: edit forms + orders -->
+    <div class="col-lg-8">
+
+      <!-- Edit email -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header fw-semibold bg-transparent border-bottom">
+          <i class="bi bi-envelope me-2 text-primary"></i>Schimbă emailul
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            <input type="hidden" name="action" value="update_email">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Email nou</label>
+                <input type="email" name="email"
+                       class="form-control {% if errors.email %}is-invalid{% endif %}"
+                       value="{{ current_user.email }}" required>
+                {% if errors.email %}
+                <div class="invalid-feedback">{{ errors.email }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Confirmă cu parola curentă</label>
+                <input type="password" name="password_check"
+                       class="form-control {% if errors.email_password %}is-invalid{% endif %}"
+                       placeholder="Parola ta actuală" required>
+                {% if errors.email_password %}
+                <div class="invalid-feedback">{{ errors.email_password }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm mt-3 px-4">
+              <i class="bi bi-check me-1"></i>Actualizează emailul
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Change password -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header fw-semibold bg-transparent border-bottom">
+          <i class="bi bi-lock me-2 text-primary"></i>Schimbă parola
+        </div>
+        <div class="card-body">
+          <form method="post" novalidate>
+            <input type="hidden" name="action" value="change_password">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-semibold">Parola curentă</label>
+                <input type="password" name="current_password"
+                       class="form-control {% if errors.current_password %}is-invalid{% endif %}"
+                       placeholder="Parola actuală" required>
+                {% if errors.current_password %}
+                <div class="invalid-feedback">{{ errors.current_password }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Parola nouă</label>
+                <input type="password" name="new_password" id="newPasswordInput"
+                       class="form-control {% if errors.new_password %}is-invalid{% endif %}"
+                       placeholder="Minim 3 caractere" required>
+                {% if errors.new_password %}
+                <div class="invalid-feedback">{{ errors.new_password }}</div>
+                {% endif %}
+                <div class="mt-1" id="profileStrengthBox" style="display:none">
+                  <div class="d-flex gap-1 mb-1">
+                    <div class="flex-fill rounded" style="height:4px;background:#dee2e6" id="pb1"></div>
+                    <div class="flex-fill rounded" style="height:4px;background:#dee2e6" id="pb2"></div>
+                    <div class="flex-fill rounded" style="height:4px;background:#dee2e6" id="pb3"></div>
+                    <div class="flex-fill rounded" style="height:4px;background:#dee2e6" id="pb4"></div>
+                  </div>
+                  <div class="form-text" id="profileStrengthText"></div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-semibold">Confirmă parola nouă</label>
+                <input type="password" name="confirm_password"
+                       class="form-control {% if errors.confirm_password %}is-invalid{% endif %}"
+                       placeholder="Repetă parola nouă" required>
+                {% if errors.confirm_password %}
+                <div class="invalid-feedback">{{ errors.confirm_password }}</div>
+                {% endif %}
+              </div>
+            </div>
+            <button type="submit" class="btn btn-warning btn-sm mt-3 px-4">
+              <i class="bi bi-shield-lock me-1"></i>Schimbă parola
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Delete account -->
+      <div class="card border-0 shadow-sm mb-4 border-danger">
+        <div class="card-header fw-semibold bg-transparent border-bottom text-danger">
+          <i class="bi bi-trash me-2"></i>Șterge contul
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">
+            Contul va fi marcat pentru ștergere și dezactivat imediat.
+            Datele vor fi șterse definitiv după
+            {% if current_user.role == 'developer' %}24 de ore{% else %}30 de zile{% endif %}.
+            Un admin sau developer poate reactiva contul în acest interval.
+          </p>
+          <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+            <i class="bi bi-trash me-1"></i>Șterge contul meu
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent orders -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header fw-semibold bg-transparent border-bottom d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-bag me-2 text-primary"></i>Ultimele comenzi</span>
+          <a href="{{ url_for('orders.history') }}" class="btn btn-outline-primary btn-sm">
+            Toate comenzile <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+        <div class="card-body p-0">
+          {% if orders %}
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead class="table-light">
+                <tr><th>#</th><th>Data</th><th>Total</th><th>Status</th><th></th></tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                <tr>
+                  <td><strong>#{{ order.id }}</strong></td>
+                  <td class="small text-muted">{{ order.created_at | ro_time }}</td>
+                  <td>{{ order.total_coins }} <i class="bi bi-coin text-warning small"></i></td>
+                  <td><span class="badge bg-{{ order.status_color }}">{{ order.status_display }}</span></td>
+                  <td>
+                    <a href="{{ url_for('orders.detail', order_id=order.id) }}"
+                       class="btn btn-outline-secondary btn-sm">Detalii</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-muted text-center py-4">
+            <i class="bi bi-bag-x d-block fs-3 mb-2"></i>
+            Nu ai plasat nicio comandă.
+            <a href="{{ url_for('products.list_products') }}" class="d-block mt-1">Explorează produsele</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+<!-- Delete account modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header border-danger">
+        <h5 class="modal-title text-danger"><i class="bi bi-trash me-2"></i>Confirmare ștergere cont</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{{ url_for('main.delete_account') }}">
+        <div class="modal-body">
+          <p>Introdu parola pentru a confirma ștergerea contului <strong>{{ current_user.username }}</strong>.</p>
+          <input type="password" name="password" class="form-control" placeholder="Parola ta" required autofocus>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anulează</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="bi bi-trash me-1"></i>Șterge contul definitiv
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% block scripts %}
+<script>
+const levels = [
+  {text: 'Prea scurtă', color: '#dc3545'},
+  {text: 'Slabă', color: '#dc3545'},
+  {text: 'Acceptabilă', color: '#fd7e14'},
+  {text: 'Bună', color: '#0dcaf0'},
+  {text: 'Puternică', color: '#198754'},
+];
+const pbars = [1,2,3,4].map(i => document.getElementById('pb' + i));
+function strength(pw) {
+  if (pw.length < 3) return 0;
+  if (pw.length < 6) return 1;
+  let s = 1;
+  if (pw.length >= 8) s++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return Math.min(s, 4);
+}
+const newPwInput = document.getElementById('newPasswordInput');
+if (newPwInput) {
+  newPwInput.addEventListener('input', function() {
+    document.getElementById('profileStrengthBox').style.display = this.value.length ? 'block' : 'none';
+    const lvl = strength(this.value);
+    const info = levels[lvl];
+    pbars.forEach((b, i) => { b.style.background = i < lvl ? info.color : '#dee2e6'; });
+    document.getElementById('profileStrengthText').innerHTML =
+      `<span style="color:${info.color}">${info.text}</span>`;
+  });
+}
+</script>
+{% endblock %}

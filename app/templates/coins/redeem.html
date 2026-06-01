@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Activează cupon{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:500px">
+  <div class="card shadow border-0">
+    <div class="card-header bg-success text-white text-center py-4">
+      <i class="bi bi-ticket-perforated fs-2 d-block mb-2"></i>
+      <h4 class="fw-bold mb-0">Activează cupon</h4>
+      <p class="small mb-0 opacity-75">Introdu codul de cupon pentru a primi coins</p>
+    </div>
+    <div class="card-body p-4">
+      <form method="post" novalidate>
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Cod cupon</label>
+          <div class="input-group input-group-lg">
+            <span class="input-group-text bg-light"><i class="bi bi-upc"></i></span>
+            <input type="text" name="code" class="form-control form-control-lg text-uppercase fw-bold"
+                   placeholder="EX: ABC123XYZ" required
+                   style="letter-spacing:0.1em">
+          </div>
+          <div class="form-text">Codul este case-insensitive.</div>
+        </div>
+        <button type="submit" class="btn btn-success w-100 py-3 fw-semibold fs-5">
+          <i class="bi bi-check-circle me-2"></i>Activează
+        </button>
+      </form>
+    </div>
+    <div class="card-footer bg-light text-center py-3">
+      <small class="text-muted">
+        Nu ai un cupon? Câștigă coins prin
+        <a href="{{ url_for('coins.game') }}" class="text-primary fw-semibold">jocul nostru</a>!
+      </small>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <div class="text-muted small">
+      <i class="bi bi-wallet2 me-1"></i>Balanța curentă:
+      <strong class="text-primary">{{ current_user.display_coins }} coins</strong>
+    </div>
+  </div>
+</div>
+{% endblock %}

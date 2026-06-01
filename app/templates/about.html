@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}Despre mine{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+
+  {% if current_user.is_authenticated and current_user.role == 'developer' %}
+  <div class="row justify-content-center mb-3">
+    <div class="col-lg-8 text-end">
+      <a href="{{ url_for('main.about_edit') }}" class="btn btn-warning btn-sm">
+        <i class="bi bi-pencil-square me-1"></i>Editează pagina
+      </a>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Profile card -->
+  <div class="row justify-content-center mb-5">
+    <div class="col-lg-8">
+      <div class="card shadow border-0 overflow-hidden">
+        <div class="card-header bg-primary py-4 text-center text-white">
+          <div class="about-avatar mx-auto mb-3">
+            <i class="bi bi-person-circle" style="font-size: 5rem;"></i>
+          </div>
+          <h2 class="fw-bold mb-1">{{ profile.full_name if profile else 'Prenume Nume' }}</h2>
+          <p class="mb-0 opacity-75">Student — {{ profile.faculty if profile else 'Facultatea de Automatică și Calculatoare' }}</p>
+        </div>
+        <div class="card-body p-4">
+          <div class="row g-3 mb-4">
+            <div class="col-sm-4 text-center">
+              <div class="about-stat-box border rounded p-3">
+                <i class="bi bi-mortarboard fs-2 text-primary d-block mb-1"></i>
+                <div class="fw-semibold">Universitate</div>
+                <div class="text-muted small">{{ profile.university if profile else 'Universitatea Tehnică' }}</div>
+              </div>
+            </div>
+            <div class="col-sm-4 text-center">
+              <div class="about-stat-box border rounded p-3">
+                <i class="bi bi-calendar3 fs-2 text-success d-block mb-1"></i>
+                <div class="fw-semibold">An de studiu</div>
+                <div class="text-muted small">{{ profile.study_year if profile else 'Anul II' }}</div>
+              </div>
+            </div>
+            <div class="col-sm-4 text-center">
+              <div class="about-stat-box border rounded p-3">
+                <i class="bi bi-code-slash fs-2 text-warning d-block mb-1"></i>
+                <div class="fw-semibold">Specializare</div>
+                <div class="text-muted small">{{ profile.specialization if profile else 'Calculatoare și IT' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <h5 class="fw-bold border-bottom pb-2 mb-3">
+            <i class="bi bi-person me-2 text-primary"></i>Despre mine
+          </h5>
+          {% if profile and profile.about_text %}
+          {% for paragraph in profile.about_text.split('\n') %}
+          {% if paragraph.strip() %}
+          <p class="text-muted">{{ paragraph.strip() }}</p>
+          {% endif %}
+          {% endfor %}
+          {% else %}
+          <p class="text-muted">
+            Sunt student pasionat de programare și tehnologie. Îmi place să construiesc aplicații web
+            și să rezolv probleme complexe. Această aplicație a fost dezvoltată ca proiect de laborator
+            pentru cursul de Tehnici Web.
+          </p>
+          {% endif %}
+
+          <h5 class="fw-bold border-bottom pb-2 mb-3 mt-4">
+            <i class="bi bi-tools me-2 text-primary"></i>Tehnologii folosite
+          </h5>
+          <div class="d-flex flex-wrap gap-2 mb-4">
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">Python</span>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">Flask</span>
+            <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2">SQLAlchemy</span>
+            <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2">Bootstrap 5</span>
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-2">SQLite</span>
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2">HTML5 / CSS3</span>
+            <span class="badge bg-dark-subtle text-dark border border-dark-subtle px-3 py-2">JavaScript</span>
+            <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">Chart.js</span>
+          </div>
+
+          <h5 class="fw-bold border-bottom pb-2 mb-3">
+            <i class="bi bi-journal-code me-2 text-primary"></i>Funcționalitățile aplicației
+          </h5>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="d-flex gap-2 align-items-start">
+                <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                <div>
+                  <div class="fw-semibold">Sistem de autentificare</div>
+                  <div class="text-muted small">Roluri: user, manager, admin, developer</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex gap-2 align-items-start">
+                <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                <div>
+                  <div class="fw-semibold">Catalog de produse</div>
+                  <div class="text-muted small">Paginare, căutare, filtrare pe categorie</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex gap-2 align-items-start">
+                <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                <div>
+                  <div class="fw-semibold">Sistem de coins</div>
+                  <div class="text-muted small">Câștig prin joc + cupoane de reducere</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex gap-2 align-items-start">
+                <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                <div>
+                  <div class="fw-semibold">Joc de ghicit numărul</div>
+                  <div class="text-muted small">Algoritmul de căutare binară ca mecanic de joc</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex gap-2 align-items-start">
+                <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                <div>
+                  <div class="fw-semibold">Sistem de comenzi</div>
+                  <div class="text-muted small">Coș, checkout, tracking, istoric</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="d-flex gap-2 align-items-start">
+                <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                <div>
+                  <div class="fw-semibold">Panou de administrare</div>
+                  <div class="text-muted small">Dashboard cu grafice, gestionare completă</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h5 class="fw-bold border-bottom pb-2 mb-3 mt-4">
+            <i class="bi bi-link-45deg me-2 text-primary"></i>Contact &amp; Social
+          </h5>
+          <div class="d-flex flex-wrap gap-3">
+            {% set email = profile.email if profile else '' %}
+            {% if email %}
+            <a href="mailto:{{ email }}" class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-envelope me-2"></i>{{ email }}
+            </a>
+            {% endif %}
+            {% for field, label, icon, _ in SOCIAL_PLATFORMS %}
+            {% set url = profile | attr(field) if profile else '' %}
+            {% if url %}
+            <a href="{{ url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+              <i class="bi {{ icon }} me-2"></i>{{ label }}
+            </a>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lab info -->
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card border-0 bg-primary-subtle">
+        <div class="card-body p-4 text-center">
+          <h6 class="fw-bold text-primary mb-2">
+            <i class="bi bi-award me-2"></i>Informații academice
+          </h6>
+          <p class="mb-1 text-muted small">Laborator #07 — Tehnici Web / Programare Web</p>
+          <p class="mb-0 text-muted small">Aplicație web Flask cu autentificare, bază de date SQLite și interfață Bootstrap 5</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

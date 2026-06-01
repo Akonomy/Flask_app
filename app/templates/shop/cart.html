@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Coșul meu{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="fw-bold mb-4"><i class="bi bi-cart3 me-2"></i>Coșul meu</h2>
+
+  {% if cart %}
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Produs</th>
+                  <th class="text-center">Preț</th>
+                  <th class="text-center">Cantitate</th>
+                  <th class="text-center">Subtotal</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for pid, item in cart.items() %}
+                <tr>
+                  <td>
+                    <div class="d-flex align-items-center gap-3">
+                      {% if item.image %}
+                      <img src="/static/uploads/products/{{ item.image }}" alt=""
+                           class="rounded" style="width:50px;height:50px;object-fit:cover">
+                      {% else %}
+                      <div class="bg-light rounded d-flex align-items-center justify-content-center"
+                           style="width:50px;height:50px">
+                        <i class="bi bi-box-seam text-secondary"></i>
+                      </div>
+                      {% endif %}
+                      <a href="{{ url_for('products.detail', product_id=pid) }}"
+                         class="text-dark fw-semibold text-decoration-none">{{ item.name }}</a>
+                    </div>
+                  </td>
+                  <td class="text-center">{{ item.price }} <i class="bi bi-coin text-warning"></i></td>
+                  <td class="text-center">
+                    <form action="{{ url_for('shop.update_cart', product_id=pid) }}" method="post"
+                          class="d-inline-flex align-items-center gap-1">
+                      <input type="number" name="quantity" value="{{ item.quantity }}"
+                             min="1" class="form-control form-control-sm text-center"
+                             style="width:65px" onchange="this.form.submit()">
+                    </form>
+                  </td>
+                  <td class="text-center fw-bold">{{ item.price * item.quantity }} <i class="bi bi-coin text-warning"></i></td>
+                  <td>
+                    <form action="{{ url_for('shop.remove_from_cart', product_id=pid) }}" method="post">
+                      <button type="submit" class="btn btn-outline-danger btn-sm">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white fw-semibold">
+          <i class="bi bi-receipt me-2"></i>Sumar
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Produse</span>
+            <span>{{ cart|length }} tipuri</span>
+          </div>
+          <div class="d-flex justify-content-between mb-3 border-top pt-3">
+            <span class="fw-bold fs-5">Total</span>
+            <span class="fw-bold fs-5 text-primary">{{ total }} <i class="bi bi-coin"></i></span>
+          </div>
+          <div class="mb-3 text-muted small">
+            <i class="bi bi-wallet2 me-1"></i>Balanța ta: {{ current_user.display_coins }} coins
+          </div>
+          {% if current_user.has_unlimited_coins or current_user.coins >= total %}
+          <a href="{{ url_for('shop.checkout') }}" class="btn btn-success w-100 fw-semibold">
+            <i class="bi bi-credit-card me-2"></i>Finalizează comanda
+          </a>
+          {% else %}
+          <div class="alert alert-warning small mb-2">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Îți lipsesc {{ total - current_user.coins }} coins.
+          </div>
+          <a href="{{ url_for('coins.game') }}" class="btn btn-outline-warning w-100 btn-sm mb-2">
+            <i class="bi bi-controller me-1"></i>Câștigă coins
+          </a>
+          <a href="{{ url_for('coins.redeem') }}" class="btn btn-outline-primary w-100 btn-sm">
+            <i class="bi bi-ticket-perforated me-1"></i>Activează cupon
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <a href="{{ url_for('products.list_products') }}" class="btn btn-outline-secondary w-100 mt-3">
+        <i class="bi bi-arrow-left me-1"></i>Continuă cumpărăturile
+      </a>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-cart-x fs-1 text-muted d-block mb-3"></i>
+    <h5 class="text-muted">Coșul tău este gol.</h5>
+    <a href="{{ url_for('products.list_products') }}" class="btn btn-primary mt-3">
+      <i class="bi bi-grid me-2"></i>Explorează produse
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+{% block title %}Produse{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row">
+    <!-- Sidebar filters -->
+    <div class="col-lg-3 mb-4">
+      <div class="card border-0 shadow-sm sticky-top" style="top:80px">
+        <div class="card-header bg-primary text-white fw-semibold">
+          <i class="bi bi-funnel me-2"></i>Filtrare
+        </div>
+        <div class="card-body">
+          <form method="get" action="{{ url_for('products.list_products') }}">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Caută</label>
+              <input type="text" name="search" class="form-control form-control-sm"
+                     placeholder="Nume produs…" value="{{ search }}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">Categorie</label>
+              <div class="d-flex flex-column gap-1">
+                <a href="{{ url_for('products.list_products', search=search) }}"
+                   class="btn btn-sm {% if not current_category %}btn-primary{% else %}btn-outline-secondary{% endif %} text-start">
+                  Toate categoriile
+                </a>
+                {% for cat in categories %}
+                <a href="{{ url_for('products.list_products', category=cat, search=search) }}"
+                   class="btn btn-sm {% if current_category == cat %}btn-primary{% else %}btn-outline-secondary{% endif %} text-start">
+                  {{ cat }}
+                </a>
+                {% endfor %}
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm w-100">
+              <i class="bi bi-search me-1"></i>Caută
+            </button>
+            {% if search or current_category %}
+            <a href="{{ url_for('products.list_products') }}" class="btn btn-outline-secondary btn-sm w-100 mt-2">
+              <i class="bi bi-x me-1"></i>Resetează
+            </a>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Products grid -->
+    <div class="col-lg-9">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="fw-bold mb-0">
+          {% if current_category %}{{ current_category }}{% elif search %}Rezultate pentru „{{ search }}"{% else %}Toate produsele{% endif %}
+        </h4>
+        <span class="text-muted small">{{ products.total }} produse</span>
+      </div>
+
+      {% if products.items %}
+      <div class="row row-cols-2 row-cols-md-3 g-4">
+        {% for product in products.items %}
+        {% set in_wishlist = product.id in wishlist_ids %}
+        <div class="col">
+          <div class="card product-card h-100 shadow-sm">
+            <!-- Clickable image -->
+            <a href="{{ url_for('products.detail', product_id=product.id) }}" class="text-decoration-none">
+              <div class="product-img-wrap">
+                {% if product.image_url %}
+                <img src="{{ product.image_url }}" class="card-img-top product-img" alt="{{ product.name }}">
+                {% else %}
+                <div class="product-img-placeholder d-flex align-items-center justify-content-center">
+                  <i class="bi bi-box-seam text-secondary fs-1"></i>
+                </div>
+                {% endif %}
+                {% if product.is_low_stock and product.stock > 0 %}
+                <span class="badge bg-warning text-dark position-absolute top-0 start-0 m-2">Stoc redus</span>
+                {% elif product.stock == 0 %}
+                <span class="badge bg-danger position-absolute top-0 start-0 m-2">Epuizat</span>
+                {% endif %}
+              </div>
+            </a>
+            <div class="card-body d-flex flex-column">
+              <!-- Clickable title -->
+              <a href="{{ url_for('products.detail', product_id=product.id) }}"
+                 class="text-decoration-none text-body">
+                <h6 class="card-title fw-semibold mb-1">{{ product.name }}</h6>
+              </a>
+              {% if product.category %}
+              <a href="{{ url_for('products.list_products', category=product.category) }}"
+                 class="badge bg-light text-secondary border mb-2 align-self-start text-decoration-none">
+                {{ product.category }}
+              </a>
+              {% endif %}
+              <p class="text-muted small mb-2 flex-grow-1">
+                {{ (product.description or '')[:70] }}{% if product.description and product.description|length > 70 %}…{% endif %}
+              </p>
+              <div class="d-flex justify-content-between align-items-center mt-auto gap-1">
+                <span class="fw-bold text-primary">{{ product.price }} <i class="bi bi-coin"></i></span>
+                <div class="d-flex gap-1">
+                  {% if current_user.is_authenticated %}
+                  <button class="btn btn-outline-warning btn-sm wishlist-btn"
+                          data-product-id="{{ product.id }}"
+                          data-url="{{ url_for('shop.toggle_wishlist', product_id=product.id) }}"
+                          title="{% if in_wishlist %}Scoate din wishlist{% else %}Adaugă în wishlist{% endif %}">
+                    <i class="bi {% if in_wishlist %}bi-star-fill text-warning{% else %}bi-star{% endif %}"></i>
+                  </button>
+                  {% if product.stock > 0 %}
+                  <form method="post" action="{{ url_for('shop.add_to_cart', product_id=product.id) }}" class="d-inline">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit" class="btn btn-primary btn-sm" title="Adaugă în coș">
+                      <i class="bi bi-cart-plus"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                  {% endif %}
+                  <a href="{{ url_for('products.detail', product_id=product.id) }}"
+                     class="btn btn-outline-secondary btn-sm" title="Detalii produs">
+                    <i class="bi bi-eye"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Pagination -->
+      {% if products.pages > 1 %}
+      <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+          <li class="page-item {% if not products.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('products.list_products', page=products.prev_num, category=current_category, search=search) }}">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          </li>
+          {% for p in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+            <li class="page-item {% if p == products.page %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('products.list_products', page=p, category=current_category, search=search) }}">{{ p }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item {% if not products.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('products.list_products', page=products.next_num, category=current_category, search=search) }}">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      {% endif %}
+
+      {% else %}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-search fs-1 d-block mb-3"></i>
+        <p class="fs-5">Nu s-au găsit produse.</p>
+        {% if search or current_category %}
+        <a href="{{ url_for('products.list_products') }}" class="btn btn-outline-primary">
+          <i class="bi bi-x me-1"></i>Resetează filtrele
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.wishlist-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const url = this.dataset.url;
+    fetch(url, {method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(r => r.json())
+      .then(data => {
+        const icon = this.querySelector('i');
+        if (data.wishlisted) {
+          icon.className = 'bi bi-star-fill text-warning';
+          this.title = 'Scoate din wishlist';
+        } else {
+          icon.className = 'bi bi-star';
+          this.title = 'Adaugă în wishlist';
+        }
+      });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'panel/base.html' %}
+{% block title %}Wishlist produse{% endblock %}
+{% block panel_title %}Wishlist — produse dorite{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    {% if items %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Produs</th>
+            <th>Categorie</th>
+            <th class="text-center">Preț</th>
+            <th class="text-center">Stoc</th>
+            <th class="text-center">
+              <i class="bi bi-star-fill text-warning"></i> Doritori
+            </th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in items %}
+          <tr>
+            <td>
+              {% if item.product.image_url %}
+              <img src="{{ item.product.image_url }}" alt="" class="rounded me-2"
+                   style="width:40px;height:40px;object-fit:cover">
+              {% endif %}
+              <strong>{{ item.product.name }}</strong>
+            </td>
+            <td>
+              {% if item.product.category %}
+              <span class="badge bg-secondary">{{ item.product.category }}</span>
+              {% endif %}
+            </td>
+            <td class="text-center">{{ item.product.price }} <i class="bi bi-coin text-warning"></i></td>
+            <td class="text-center">
+              {% if item.product.stock == 0 %}
+              <span class="badge bg-danger">Epuizat</span>
+              {% elif item.product.is_low_stock %}
+              <span class="badge bg-warning text-dark">{{ item.product.stock }}</span>
+              {% else %}
+              {{ item.product.stock }}
+              {% endif %}
+            </td>
+            <td class="text-center fw-bold">
+              <span class="badge bg-warning text-dark fs-6">{{ item.count }}</span>
+            </td>
+            <td>
+              <a href="{{ url_for('panel.edit_product', product_id=item.product.id) }}"
+                 class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5 text-muted">
+      <i class="bi bi-star fs-1 d-block mb-3"></i>
+      <p>Niciun produs nu a fost adăugat în wishlist de useri.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

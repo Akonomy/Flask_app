@@ -1,0 +1,249 @@
+{% extends 'panel/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block panel_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-primary bg-opacity-10">
+          <i class="bi bi-box-seam text-primary fs-3"></i>
+        </div>
+        <div>
+          <div class="text-muted small">Produse active</div>
+          <div class="fs-3 fw-bold">{{ total_products }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-success bg-opacity-10">
+          <i class="bi bi-bag-check text-success fs-3"></i>
+        </div>
+        <div>
+          <div class="text-muted small">Total comenzi</div>
+          <div class="fs-3 fw-bold">{{ total_orders }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-warning bg-opacity-10">
+          <i class="bi bi-hourglass-split text-warning fs-3"></i>
+        </div>
+        <div>
+          <div class="text-muted small">Comenzi în așteptare</div>
+          <div class="fs-3 fw-bold">{{ pending_orders }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% if current_user.role_level >= 3 %}
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-3">
+        <div class="rounded-3 p-3 bg-info bg-opacity-10">
+          <i class="bi bi-people text-info fs-3"></i>
+        </div>
+        <div>
+          <div class="text-muted small">Utilizatori</div>
+          <div class="fs-3 fw-bold">{{ total_users }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Charts row -->
+<div class="row g-4 mb-4">
+  <!-- Orders last 7 days -->
+  <div class="col-xl-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent fw-semibold border-bottom">
+        <i class="bi bi-graph-up me-2 text-primary"></i>Comenzi – ultimele 7 zile
+      </div>
+      <div class="card-body">
+        <canvas id="ordersChart" height="120"></canvas>
+      </div>
+    </div>
+  </div>
+  <!-- Orders by status -->
+  <div class="col-xl-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-transparent fw-semibold border-bottom">
+        <i class="bi bi-pie-chart me-2 text-success"></i>Comenzi după status
+      </div>
+      <div class="card-body d-flex align-items-center justify-content-center">
+        {% if status_labels %}
+        <canvas id="statusChart" height="180"></canvas>
+        {% else %}
+        <div class="text-muted text-center">Nicio comandă încă.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stock chart + Low stock table -->
+<div class="row g-4 mb-4">
+  <div class="col-xl-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent fw-semibold border-bottom">
+        <i class="bi bi-bar-chart me-2 text-warning"></i>Stoc produse (top 10 scăzut)
+      </div>
+      <div class="card-body">
+        {% if stock_names %}
+        <canvas id="stockChart" height="200"></canvas>
+        {% else %}
+        <div class="text-muted text-center py-3">Niciun produs adăugat.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-transparent fw-semibold border-bottom d-flex justify-content-between">
+        <span><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Stoc scăzut (≤ 5)</span>
+        <a href="{{ url_for('panel.products') }}" class="btn btn-outline-primary btn-sm">
+          Vezi toate
+        </a>
+      </div>
+      <div class="card-body p-0">
+        {% if low_stock %}
+        <ul class="list-group list-group-flush">
+          {% for p in low_stock %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('panel.edit_product', product_id=p.id) }}"
+               class="text-dark text-decoration-none fw-semibold small">{{ p.name }}</a>
+            <span class="badge {% if p.stock == 0 %}bg-danger{% else %}bg-warning text-dark{% endif %}">
+              {{ p.stock }} buc.
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-muted text-center py-4">
+          <i class="bi bi-check-circle text-success d-block mb-1"></i>Toate produsele au stoc suficient.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent orders -->
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-transparent fw-semibold border-bottom d-flex justify-content-between">
+    <span><i class="bi bi-clock-history me-2"></i>Comenzi recente</span>
+    <a href="{{ url_for('panel.orders') }}" class="btn btn-outline-primary btn-sm">Vezi toate</a>
+  </div>
+  <div class="card-body p-0">
+    {% if recent_orders %}
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr><th>#</th><th>Utilizator</th><th>Data</th><th>Total</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for order in recent_orders %}
+          <tr>
+            <td><strong>#{{ order.id }}</strong></td>
+            <td class="small">{{ order.user.username }}</td>
+            <td class="text-muted small">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</td>
+            <td>{{ order.total_coins }} <i class="bi bi-coin text-warning"></i></td>
+            <td><span class="badge bg-{{ order.status_color }}">{{ order.status_display }}</span></td>
+            <td>
+              <a href="{{ url_for('panel.order_detail', order_id=order.id) }}"
+                 class="btn btn-outline-primary btn-sm">Detalii</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-muted text-center py-4">Nicio comandă.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const ordersCtx = document.getElementById('ordersChart');
+if (ordersCtx) {
+  new Chart(ordersCtx, {
+    type: 'line',
+    data: {
+      labels: {{ days_labels | tojson }},
+      datasets: [{
+        label: 'Comenzi',
+        data: {{ days_counts | tojson }},
+        fill: true,
+        backgroundColor: 'rgba(99,102,241,0.15)',
+        borderColor: '#6366f1',
+        tension: 0.3,
+        pointRadius: 5,
+        pointBackgroundColor: '#6366f1'
+      }]
+    },
+    options: { responsive: true, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+}
+
+{% if status_labels %}
+const statusCtx = document.getElementById('statusChart');
+const statusColors = {
+  pending: '#f59e0b', processing: '#3b82f6', shipped: '#6366f1',
+  delivered: '#22c55e', cancelled: '#ef4444'
+};
+if (statusCtx) {
+  new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+      labels: {{ status_labels | tojson }},
+      datasets: [{
+        data: {{ status_counts | tojson }},
+        backgroundColor: {{ status_labels | tojson }}.map(l => statusColors[l] || '#6b7280'),
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+    }
+  });
+}
+{% endif %}
+
+{% if stock_names %}
+const stockCtx = document.getElementById('stockChart');
+if (stockCtx) {
+  new Chart(stockCtx, {
+    type: 'bar',
+    data: {
+      labels: {{ stock_names | tojson }},
+      datasets: [{
+        label: 'Stoc',
+        data: {{ stock_values | tojson }},
+        backgroundColor: {{ stock_values | tojson }}.map(v => v <= 2 ? '#ef4444' : v <= 5 ? '#f59e0b' : '#22c55e'),
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+{% endif %}
+</script>
+{% endblock %}

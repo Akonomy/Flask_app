@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Înregistrare{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card shadow border-0">
+        <div class="card-header bg-success text-white text-center py-4">
+          <i class="bi bi-person-plus fs-2 d-block mb-2"></i>
+          <h4 class="mb-0 fw-bold">Creare cont nou</h4>
+          <p class="small mb-0 opacity-75">Primești 100 coins cadou la înregistrare!</p>
+        </div>
+        <div class="card-body p-4">
+          <form method="post" novalidate>
+
+            <!-- Username -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Nume utilizator <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                <input type="text" name="username"
+                       class="form-control {% if errors.username %}is-invalid{% endif %}"
+                       placeholder="numetau" minlength="3" required autocomplete="username"
+                       value="{{ form_data.get('username', '') }}">
+                {% if errors.username %}
+                <div class="invalid-feedback">{{ errors.username }}</div>
+                {% endif %}
+              </div>
+              {% if not errors.username %}
+              <div class="form-text">Minim 3 caractere.</div>
+              {% endif %}
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                <input type="email" name="email"
+                       class="form-control {% if errors.email %}is-invalid{% endif %}"
+                       placeholder="email@exemplu.ro" required autocomplete="email"
+                       value="{{ form_data.get('email', '') }}">
+                {% if errors.email %}
+                <div class="invalid-feedback">{{ errors.email }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Password -->
+            <div class="mb-2">
+              <label class="form-label fw-semibold">Parolă <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input type="password" name="password" id="passwordInput"
+                       class="form-control {% if errors.password %}is-invalid{% endif %}"
+                       placeholder="Minim 3 caractere" minlength="3" required autocomplete="new-password">
+                {% if errors.password %}
+                <div class="invalid-feedback">{{ errors.password }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Password strength indicator -->
+            <div class="mb-3" id="strengthBox" style="display:none">
+              <div class="d-flex gap-1 mb-1" id="strengthBars">
+                <div class="flex-fill rounded" style="height:5px;background:#dee2e6" id="bar1"></div>
+                <div class="flex-fill rounded" style="height:5px;background:#dee2e6" id="bar2"></div>
+                <div class="flex-fill rounded" style="height:5px;background:#dee2e6" id="bar3"></div>
+                <div class="flex-fill rounded" style="height:5px;background:#dee2e6" id="bar4"></div>
+              </div>
+              <div class="form-text" id="strengthText"></div>
+            </div>
+
+            <!-- Confirm password -->
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Confirmă parola <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                <input type="password" name="confirm"
+                       class="form-control {% if errors.confirm %}is-invalid{% endif %}"
+                       placeholder="Repetă parola" required autocomplete="new-password">
+                {% if errors.confirm %}
+                <div class="invalid-feedback">{{ errors.confirm }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+              <i class="bi bi-person-check me-2"></i>Creează cont
+            </button>
+          </form>
+        </div>
+        <div class="card-footer text-center py-3">
+          <small class="text-muted">Ai deja cont?
+            <a href="{{ url_for('auth.login') }}" class="text-primary fw-semibold">Autentifică-te</a>
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const levels = [
+  {text: 'Prea scurtă', color: '#dc3545'},
+  {text: 'Slabă — ușor de ghicit', color: '#dc3545'},
+  {text: 'Acceptabilă', color: '#fd7e14'},
+  {text: 'Bună', color: '#0dcaf0'},
+  {text: 'Puternică', color: '#198754'},
+];
+const bars = [1,2,3,4].map(i => document.getElementById('bar' + i));
+
+function strength(pw) {
+  if (pw.length < 3) return 0;
+  if (pw.length < 6) return 1;
+  let s = 1;
+  if (pw.length >= 8) s++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++;
+  if (/[0-9]/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return Math.min(s, 4);
+}
+
+document.getElementById('passwordInput').addEventListener('input', function() {
+  const val = this.value;
+  document.getElementById('strengthBox').style.display = val.length ? 'block' : 'none';
+  const lvl = strength(val);
+  const info = levels[lvl];
+  bars.forEach((b, i) => {
+    b.style.background = i < lvl ? info.color : '#dee2e6';
+  });
+  document.getElementById('strengthText').innerHTML =
+    `<span style="color:${info.color}">${info.text}</span>`;
+});
+</script>
+{% endblock %}

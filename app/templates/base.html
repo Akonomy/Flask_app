@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ro" data-bs-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}ShopCoins{% endblock %} — ShopCoins</title>
+  <script>(function(){var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-bs-theme',t);})();</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
+      <i class="bi bi-shop-window me-1"></i>ShopCoins
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navMain">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('products.list_products') }}">
+            <i class="bi bi-grid me-1"></i>Produse
+          </a>
+        </li>
+        {% if current_user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('orders.history') }}">
+            <i class="bi bi-bag me-1"></i>Comenzile mele
+          </a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-coin me-1"></i>Coins
+          </a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{{ url_for('coins.game') }}">
+              <i class="bi bi-controller me-2"></i><a href="{{ url_for('coins.game') }}" class="text-decoration-none text-reset">Joc – Câștigă coins</a>
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('coins.redeem') }}">
+              <i class="bi bi-ticket-perforated me-2"></i>Activează cupon
+            </a></li>
+          </ul>
+        </li>
+        {% if current_user.role_level >= 2 %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('panel.dashboard') }}">
+            <i class="bi bi-speedometer2 me-1"></i>Panou
+          </a>
+        </li>
+        {% endif %}
+        {% endif %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.about') }}">
+            <i class="bi bi-person-circle me-1"></i>Despre
+          </a>
+        </li>
+      </ul>
+      <ul class="navbar-nav ms-auto align-items-center">
+        <li class="nav-item">
+          <button id="themeToggle" class="btn btn-link nav-link px-2" title="Schimbă tema" aria-label="Toggle theme">
+            <i id="themeIcon" class="bi bi-moon-stars-fill"></i>
+          </button>
+        </li>
+        {% if current_user.is_authenticated %}
+        <li class="nav-item me-2">
+          <a class="nav-link position-relative" href="{{ url_for('shop.cart') }}" title="Coș cumpărături">
+            <i class="bi bi-cart3 fs-5"></i>
+            {% if cart_count > 0 %}
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark"
+                  style="font-size:.65rem">{{ cart_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+        <li class="nav-item me-2">
+          <span class="navbar-text text-warning fw-semibold">
+            <i class="bi bi-coin me-1"></i>{{ current_user.display_coins }}
+          </span>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle me-1"></i>{{ current_user.username }}
+            <span class="badge bg-secondary ms-1">{{ current_user.role }}</span>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{{ url_for('main.profile') }}">
+              <i class="bi bi-person-gear me-2"></i>Profilul meu
+            </a></li>
+            <li><a class="dropdown-item" href="{{ url_for('orders.history') }}">
+              <i class="bi bi-clock-history me-2"></i>Istoricul comenzilor
+            </a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.login') }}">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Autentificare
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="btn btn-warning btn-sm ms-2" href="{{ url_for('auth.register') }}">
+            <i class="bi bi-person-plus me-1"></i>Înregistrare
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="container mt-3">
+  {% for category, message in messages %}
+  <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+    <i class="bi bi-info-circle me-2"></i>{{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!-- Main content -->
+<main class="{% block main_class %}py-4{% endblock %}">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="bg-dark text-light py-4 mt-5">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <h6 class="fw-bold"><i class="bi bi-shop-window me-2"></i>ShopCoins</h6>
+        <p class="small text-secondary mb-0">Platformă educațională de comerț cu coins.</p>
+      </div>
+      <div class="col-md-4 text-center">
+        <p class="small text-secondary mb-0">Laborator #07 – Aplicație Web Flask</p>
+      </div>
+      <div class="col-md-4 text-end">
+        <a href="{{ url_for('main.about') }}" class="text-secondary small">Despre aplicație</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

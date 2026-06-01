@@ -1,0 +1,80 @@
+{% extends 'panel/base.html' %}
+{% block title %}Creare cupon{% endblock %}
+{% block panel_title %}Creare cupon nou{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Cod cupon</label>
+            <div class="input-group">
+              <input type="text" name="code" class="form-control text-uppercase"
+                     placeholder="Lasă gol pentru generare automată"
+                     value="{{ generated_code }}"
+                     style="letter-spacing:0.1em;font-weight:600">
+              <button type="button" class="btn btn-outline-secondary" id="regenerateBtn">
+                <i class="bi bi-arrow-clockwise"></i>
+              </button>
+            </div>
+            <div class="form-text">Cod generat automat: <code>{{ generated_code }}</code></div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">
+              Valoare coins <span class="text-danger">*</span>
+            </label>
+            <div class="input-group">
+              <input type="number" name="coin_value" class="form-control" required
+                     min="1" placeholder="ex: 200" value="100">
+              <span class="input-group-text"><i class="bi bi-coin text-warning"></i></span>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">
+                Nr. maxim utilizări <span class="text-danger">*</span>
+              </label>
+              <input type="number" name="max_uses" class="form-control" required
+                     min="1" value="1">
+              <div class="form-text">De câte ori poate fi folosit cuponul total.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold">
+                Valabil (zile) <span class="text-danger">*</span>
+              </label>
+              <input type="number" name="days_valid" class="form-control" required
+                     min="1" value="30">
+              <div class="form-text">Număr de zile până la expirare.</div>
+            </div>
+          </div>
+
+          <hr>
+          <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-plus-circle me-2"></i>Crează cupon
+            </button>
+            <a href="{{ url_for('panel.coupons') }}" class="btn btn-outline-secondary">
+              <i class="bi bi-x me-1"></i>Anulează
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('regenerateBtn').addEventListener('click', () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 10; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  document.querySelector('input[name="code"]').value = code;
+});
+</script>
+{% endblock %}

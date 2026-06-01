@@ -1,0 +1,102 @@
+{% extends 'panel/base.html' %}
+{% block title %}Cupoane{% endblock %}
+{% block panel_title %}Gestionare cupoane{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end mb-4">
+  <a href="{{ url_for('panel.add_coupon') }}" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i>Crează cupon
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Cod</th>
+            <th class="text-center">Valoare</th>
+            <th class="text-center">Utilizări</th>
+            <th>Expiră la</th>
+            <th class="text-center">Status</th>
+            <th>Creat de</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for coupon in coupons.items %}
+          <tr class="{% if not coupon.is_active %}table-secondary{% endif %}">
+            <td>
+              <code class="fw-bold fs-6">{{ coupon.code }}</code>
+            </td>
+            <td class="text-center fw-semibold text-success">
+              +{{ coupon.coin_value }} <i class="bi bi-coin text-warning"></i>
+            </td>
+            <td class="text-center">
+              <span class="{% if coupon.used_count >= coupon.max_uses %}text-danger{% else %}text-success{% endif %}">
+                {{ coupon.used_count }} / {{ coupon.max_uses }}
+              </span>
+            </td>
+            <td class="small">
+              {{ coupon.expiry_date.strftime('%d.%m.%Y %H:%M') }}
+              {% if coupon.expiry_date < now() %}
+              <span class="badge bg-danger ms-1">Expirat</span>
+              {% endif %}
+            </td>
+            <td class="text-center">
+              {% if coupon.is_valid %}
+              <span class="badge bg-success">Activ</span>
+              {% elif not coupon.is_active %}
+              <span class="badge bg-secondary">Dezactivat</span>
+              {% elif coupon.used_count >= coupon.max_uses %}
+              <span class="badge bg-warning text-dark">Epuizat</span>
+              {% else %}
+              <span class="badge bg-danger">Expirat</span>
+              {% endif %}
+            </td>
+            <td class="small text-muted">
+              {% if coupon.created_by_id %}
+              {% set creator = coupon.created_by_id %}
+              Admin #{{ creator }}
+              {% else %}—{% endif %}
+            </td>
+            <td>
+              {% if coupon.is_active %}
+              <form action="{{ url_for('panel.deactivate_coupon', coupon_id=coupon.id) }}" method="post"
+                    class="d-inline">
+                <button type="submit" class="btn btn-outline-danger btn-sm"
+                        onclick="return confirm('Dezactivezi cuponul {{ coupon.code }}?')">
+                  <i class="bi bi-x-circle me-1"></i>Dezactivează
+                </button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="7" class="text-muted text-center py-4">Niciun cupon creat.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if coupons.pages > 1 %}
+  <div class="card-footer bg-transparent">
+    <nav>
+      <ul class="pagination pagination-sm justify-content-center mb-0">
+        {% for p in coupons.iter_pages() %}
+          {% if p %}
+          <li class="page-item {% if p == coupons.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('panel.coupons', page=p) }}">{{ p }}</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

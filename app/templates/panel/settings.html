@@ -1,0 +1,112 @@
+{% extends 'panel/base.html' %}
+{% block title %}Setări{% endblock %}
+{% block panel_title %}Setări aplicație{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header fw-semibold border-bottom bg-transparent">
+        <i class="bi bi-controller me-2 text-primary"></i>Setări joc — Ghicește numărul
+      </div>
+      <div class="card-body p-4">
+        <form method="post" novalidate>
+          <h6 class="fw-bold text-muted text-uppercase small mb-3" style="letter-spacing:.05em">
+            Interval numere
+          </h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Număr minim</label>
+              <input type="number" name="number_min" class="form-control"
+                     value="{{ gs.number_min }}" min="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Număr maxim</label>
+              <input type="number" name="number_max" class="form-control"
+                     value="{{ gs.number_max }}" min="1">
+            </div>
+            <div class="col-12">
+              <div class="alert alert-info mb-0 small">
+                <i class="bi bi-calculator me-1"></i>
+                Încercări optime (căutare binară):
+                <strong>{{ gs.optimal_attempts }}</strong> |
+                Buffer curent: +{{ gs.attempts_buffer }} =
+                <strong>{{ gs.max_attempts }} total</strong>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <h6 class="fw-bold text-muted text-uppercase small mb-3" style="letter-spacing:.05em">
+            Recompense coins
+          </h6>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">
+                <i class="bi bi-coin text-warning me-1"></i>Recompensă de bază
+              </label>
+              <div class="input-group">
+                <input type="number" name="base_reward" class="form-control"
+                       value="{{ gs.base_reward }}" min="0">
+                <span class="input-group-text text-muted small">coins</span>
+              </div>
+              <div class="form-text">Primit indiferent de nr. de încercări.</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Buffer încercări extra</label>
+              <input type="number" name="attempts_buffer" class="form-control"
+                     value="{{ gs.attempts_buffer }}" min="0">
+              <div class="form-text">Încercări extra față de optim.</div>
+            </div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <label class="form-label">
+                <span class="badge bg-warning text-dark me-1">1.</span>Bonus prima încercare
+              </label>
+              <div class="input-group">
+                <input type="number" name="bonus_1st" class="form-control"
+                       value="{{ gs.bonus_1st }}" min="0">
+                <span class="input-group-text text-muted small">coins</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">
+                <span class="badge bg-success me-1">2.</span>Bonus a doua
+              </label>
+              <div class="input-group">
+                <input type="number" name="bonus_2nd" class="form-control"
+                       value="{{ gs.bonus_2nd }}" min="0">
+                <span class="input-group-text text-muted small">coins</span>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">
+                <span class="badge bg-info me-1">3.</span>Bonus a treia
+              </label>
+              <div class="input-group">
+                <input type="number" name="bonus_3rd" class="form-control"
+                       value="{{ gs.bonus_3rd }}" min="0">
+                <span class="input-group-text text-muted small">coins</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-secondary small">
+            <i class="bi bi-shuffle me-1"></i>
+            <strong>Factor de noroc:</strong> Recompensa finală este multiplicată cu o valoare aleatorie
+            între 0.85× și 1.20×.
+          </div>
+
+          <hr>
+          <button type="submit" class="btn btn-primary px-4">
+            <i class="bi bi-save me-2"></i>Salvează setările
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

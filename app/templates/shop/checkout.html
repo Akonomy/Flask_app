@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}Finalizare comandă{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width:900px">
+  <h2 class="fw-bold mb-4"><i class="bi bi-credit-card me-2"></i>Finalizare comandă</h2>
+
+  <form method="post" novalidate>
+    <div class="row g-4">
+      <!-- Delivery details -->
+      <div class="col-md-7">
+        <div class="card shadow-sm border-0 mb-3">
+          <div class="card-header bg-primary text-white fw-semibold">
+            <i class="bi bi-geo-alt me-2"></i>Detalii livrare
+          </div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Nume complet <span class="text-danger">*</span></label>
+              <input type="text" name="name" class="form-control" placeholder="Ion Ionescu" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Adresă <span class="text-danger">*</span></label>
+              <input type="text" name="address" class="form-control"
+                     placeholder="Str. Florilor nr. 1, bloc A, ap. 5" required>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Oraș <span class="text-danger">*</span></label>
+                <input type="text" name="city" class="form-control" placeholder="Cluj-Napoca" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold">Telefon <span class="text-danger">*</span></label>
+                <input type="tel" name="phone" class="form-control" placeholder="07XX XXX XXX" required>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery type -->
+        <div class="card shadow-sm border-0">
+          <div class="card-header fw-semibold">
+            <i class="bi bi-truck me-2"></i>Tip livrare
+          </div>
+          <div class="card-body">
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="radio" name="express" id="standardDelivery"
+                     value="" {% if not is_express %}checked{% endif %} onchange="updateTotal()">
+              <label class="form-check-label" for="standardDelivery">
+                <strong>Livrare standard</strong> — <span class="text-success fw-semibold">{{ delivery_cost }} coins</span>
+                <div class="text-muted small">Procesare automată în 2–5 minute</div>
+              </label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="express" id="expressDelivery"
+                     value="1" {% if is_express %}checked{% endif %} onchange="updateTotal()">
+              <label class="form-check-label" for="expressDelivery">
+                <strong>Livrare express</strong> — <span class="text-danger fw-semibold">{{ delivery_cost + express_surcharge }} coins</span>
+                <div class="text-muted small">Procesare prioritară în 1–2 minute</div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order summary -->
+      <div class="col-md-5">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-dark text-white fw-semibold">
+            <i class="bi bi-receipt me-2"></i>Sumar comandă
+          </div>
+          <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+              {% for pid, item in cart.items() %}
+              <li class="list-group-item d-flex justify-content-between">
+                <div>
+                  <div class="fw-semibold small">{{ item.name }}</div>
+                  <div class="text-muted small">{{ item.quantity }} × {{ item.price }} coins</div>
+                </div>
+                <span class="fw-semibold">{{ item.price * item.quantity }} <i class="bi bi-coin text-warning"></i></span>
+              </li>
+              {% endfor %}
+            </ul>
+            <div class="p-3 border-top">
+              <div class="d-flex justify-content-between text-muted small mb-1">
+                <span>Subtotal produse</span>
+                <span>{{ subtotal }} <i class="bi bi-coin text-warning"></i></span>
+              </div>
+              <div class="d-flex justify-content-between text-muted small mb-2" id="deliveryCostRow">
+                <span>Livrare <span id="deliveryLabel"></span></span>
+                <span id="deliveryCostDisplay">{{ delivery_cost }} <i class="bi bi-coin text-warning"></i></span>
+              </div>
+              <div class="d-flex justify-content-between fw-bold fs-5 border-top pt-2">
+                <span>Total</span>
+                <span class="text-primary" id="grandTotalDisplay">{{ subtotal + delivery_cost }} <i class="bi bi-coin"></i></span>
+              </div>
+              <div class="text-muted small mt-1">
+                <i class="bi bi-wallet2 me-1"></i>Balanța ta: {{ current_user.display_coins }} coins
+              </div>
+              {% if not current_user.has_unlimited_coins %}
+              <div class="text-muted small" id="remainingRow">
+                <i class="bi bi-arrow-right me-1 text-success"></i>
+                Rămâi cu <span id="remainingCoins">{{ current_user.coins - subtotal - delivery_cost }}</span> coins
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 py-3 fw-bold mt-3 fs-5" id="placeBtn">
+          <i class="bi bi-check-circle me-2"></i>Plasează comanda
+          (<span id="btnTotal">{{ subtotal + delivery_cost }}</span> coins)
+        </button>
+        <a href="{{ url_for('shop.cart') }}" class="btn btn-outline-secondary w-100 mt-2">
+          <i class="bi bi-arrow-left me-1"></i>Înapoi la coș
+        </a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const subtotal = {{ subtotal }};
+const standard = {{ delivery_cost }};
+const express = {{ delivery_cost + express_surcharge }};
+const coins = {{ current_user.coins if not current_user.has_unlimited_coins else 'Infinity' }};
+
+function updateTotal() {
+  const isExpress = document.getElementById('expressDelivery').checked;
+  const dc = isExpress ? express : standard;
+  const gt = subtotal + dc;
+  document.getElementById('deliveryCostDisplay').innerHTML = dc + ' <i class="bi bi-coin text-warning"></i>';
+  document.getElementById('deliveryCostRow').querySelector('#deliveryLabel').textContent = isExpress ? '(Express)' : '';
+  document.getElementById('grandTotalDisplay').innerHTML = gt + ' <i class="bi bi-coin"></i>';
+  document.getElementById('btnTotal').textContent = gt;
+  const rem = document.getElementById('remainingCoins');
+  if (rem) rem.textContent = coins === Infinity ? '∞' : (coins - gt);
+}
+updateTotal();
+</script>
+{% endblock %}

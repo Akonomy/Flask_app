@@ -1,0 +1,90 @@
+{% extends 'panel/base.html' %}
+{% block title %}Utilizatori{% endblock %}
+{% block panel_title %}Gestionare utilizatori{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <form method="get" class="d-flex gap-2">
+    <input type="text" name="search" class="form-control" placeholder="Caută utilizator…" value="{{ search }}">
+    <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search"></i></button>
+    {% if search %}
+    <a href="{{ url_for('panel.users') }}" class="btn btn-outline-secondary"><i class="bi bi-x"></i></a>
+    {% endif %}
+  </form>
+  <span class="text-muted small">{{ users.total }} utilizatori</span>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Utilizator</th>
+            <th>Email</th>
+            <th class="text-center">Rol</th>
+            <th class="text-center">Coins</th>
+            <th class="text-center">Comenzi</th>
+            <th class="text-center">Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users.items %}
+          <tr class="{% if not user.is_active %}table-secondary{% endif %}">
+            <td class="text-muted small">{{ user.id }}</td>
+            <td>
+              <div class="fw-semibold">{{ user.username }}</div>
+              <div class="text-muted" style="font-size:0.75rem">{{ user.created_at.strftime('%d.%m.%Y') }}</div>
+            </td>
+            <td class="small text-muted">{{ user.email }}</td>
+            <td class="text-center">
+              {% set role_colors = {'developer': 'warning text-dark', 'admin': 'danger', 'manager': 'primary', 'user': 'secondary'} %}
+              <span class="badge bg-{{ role_colors.get(user.role, 'secondary') }}">{{ user.role }}</span>
+            </td>
+            <td class="text-center fw-semibold">
+              {{ user.display_coins }} <i class="bi bi-coin text-warning small"></i>
+            </td>
+            <td class="text-center">{{ user.total_orders }}</td>
+            <td class="text-center">
+              {% if user.is_active %}
+              <span class="badge bg-success">Activ</span>
+              {% else %}
+              <span class="badge bg-danger">Dezactivat</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('panel.user_detail', user_id=user.id) }}"
+                 class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-person me-1"></i>Detalii
+              </a>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="8" class="text-muted text-center py-4">Niciun utilizator.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if users.pages > 1 %}
+  <div class="card-footer bg-transparent">
+    <nav>
+      <ul class="pagination pagination-sm justify-content-center mb-0">
+        {% for p in users.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if p %}
+          <li class="page-item {% if p == users.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('panel.users', page=p, search=search) }}">{{ p }}</a>
+          </li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

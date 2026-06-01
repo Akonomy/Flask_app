@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Editează pagina About{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width:800px">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('main.about') }}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left me-1"></i>Înapoi
+    </a>
+    <h3 class="fw-bold mb-0">
+      <i class="bi bi-pencil-square me-2 text-warning"></i>Editează pagina About
+    </h3>
+    <span class="badge bg-warning text-dark">developer only</span>
+  </div>
+
+  <form method="post" action="{{ url_for('main.about_edit') }}">
+    <!-- Identity -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-primary text-white">
+        <i class="bi bi-person me-2"></i>Identitate
+      </div>
+      <div class="card-body row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Nume complet <span class="text-danger">*</span></label>
+          <input type="text" name="full_name" class="form-control"
+                 value="{{ profile.full_name }}" placeholder="Prenume Nume" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Email de contact</label>
+          <input type="email" name="email" class="form-control"
+                 value="{{ profile.email }}" placeholder="student@example.com">
+        </div>
+        <div class="col-md-12">
+          <label class="form-label fw-semibold">Facultate</label>
+          <input type="text" name="faculty" class="form-control"
+                 value="{{ profile.faculty }}" placeholder="Facultatea de Automatică și Calculatoare">
+        </div>
+      </div>
+    </div>
+
+    <!-- Academic info -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-success text-white">
+        <i class="bi bi-mortarboard me-2"></i>Informații academice
+      </div>
+      <div class="card-body row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Universitate</label>
+          <input type="text" name="university" class="form-control"
+                 value="{{ profile.university }}" placeholder="Universitatea Tehnică">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">An de studiu</label>
+          <input type="text" name="study_year" class="form-control"
+                 value="{{ profile.study_year }}" placeholder="Anul II">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Specializare</label>
+          <input type="text" name="specialization" class="form-control"
+                 value="{{ profile.specialization }}" placeholder="Calculatoare și IT">
+        </div>
+      </div>
+    </div>
+
+    <!-- About text -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-info text-white">
+        <i class="bi bi-chat-text me-2"></i>Despre mine
+      </div>
+      <div class="card-body">
+        <label class="form-label fw-semibold">Text descriptiv</label>
+        <div class="form-text mb-2">Fiecare linie nouă devine un paragraf separat.</div>
+        <textarea name="about_text" class="form-control" rows="6"
+                  placeholder="Scrie câteva rânduri despre tine...">{{ profile.about_text }}</textarea>
+      </div>
+    </div>
+
+    <!-- Social links -->
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header fw-semibold bg-dark text-white">
+        <i class="bi bi-link-45deg me-2"></i>Linkuri de contact &amp; social
+      </div>
+      <div class="card-body">
+        <p class="text-muted small mb-3">Completează doar platformele pe care vrei să le afișezi. Lasă gol ce nu vrei să apară.</p>
+        <div class="row g-3">
+          {% for field, label, icon, placeholder in SOCIAL_PLATFORMS %}
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">
+              <i class="bi {{ icon }} me-1"></i>{{ label }}
+            </label>
+            <input type="url" name="{{ field }}" class="form-control"
+                   value="{{ (profile | attr(field)) if profile else '' }}"
+                   placeholder="https://{{ placeholder }}/…">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+      <i class="bi bi-eye fs-5"></i>
+      <div>Modificările sunt vizibile imediat pe <a href="{{ url_for('main.about') }}" target="_blank">pagina About</a> după salvare.</div>
+    </div>
+
+    <div class="d-flex gap-3 justify-content-end">
+      <a href="{{ url_for('main.about') }}" class="btn btn-outline-secondary px-4">Anulează</a>
+      <button type="submit" class="btn btn-primary px-5">
+        <i class="bi bi-save me-2"></i>Salvează
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

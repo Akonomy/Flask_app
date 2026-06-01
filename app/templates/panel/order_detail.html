@@ -1,0 +1,99 @@
+{% extends 'panel/base.html' %}
+{% block title %}Comanda #{{ order.id }}{% endblock %}
+{% block panel_title %}Comanda #{{ order.id }}{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <!-- Items -->
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header fw-semibold border-bottom bg-transparent">
+        <i class="bi bi-box-seam me-2"></i>Produse
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for item in order.items %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">{{ item.product.name if item.product else 'Produs șters' }}</div>
+              <div class="text-muted small">{{ item.quantity }} × {{ item.price_at_purchase }} coins</div>
+            </div>
+            <span class="fw-bold">{{ item.subtotal }} <i class="bi bi-coin text-warning"></i></span>
+          </li>
+          {% endfor %}
+          <li class="list-group-item d-flex justify-content-between fw-bold">
+            <span>Total</span>
+            <span class="text-primary fs-5">{{ order.total_coins }} <i class="bi bi-coin"></i></span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Delivery info -->
+    <div class="card border-0 shadow-sm">
+      <div class="card-header fw-semibold border-bottom bg-transparent">
+        <i class="bi bi-geo-alt me-2"></i>Date livrare
+      </div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-3 text-muted">Nume</dt><dd class="col-sm-9">{{ order.delivery_name }}</dd>
+          <dt class="col-sm-3 text-muted">Adresă</dt><dd class="col-sm-9">{{ order.delivery_address }}</dd>
+          <dt class="col-sm-3 text-muted">Oraș</dt><dd class="col-sm-9">{{ order.delivery_city }}</dd>
+          <dt class="col-sm-3 text-muted">Telefon</dt><dd class="col-sm-9">{{ order.delivery_phone }}</dd>
+          <dt class="col-sm-3 text-muted">Plasată</dt>
+          <dd class="col-sm-9">{{ order.created_at.strftime('%d.%m.%Y %H:%M') }}</dd>
+          <dt class="col-sm-3 text-muted">Utilizator</dt>
+          <dd class="col-sm-9">
+            {% if current_user.role_level >= 3 %}
+            <a href="{{ url_for('panel.user_detail', user_id=order.user_id) }}">{{ order.user.username }}</a>
+            {% else %}
+            {{ order.user.username }}
+            {% endif %}
+          </dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status management -->
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header fw-semibold border-bottom bg-transparent">
+        <i class="bi bi-pencil-square me-2"></i>Actualizare status
+      </div>
+      <div class="card-body">
+        <div class="mb-3 text-center">
+          <span class="badge bg-{{ order.status_color }} fs-5 px-3 py-2">
+            {{ order.status_display }}
+          </span>
+        </div>
+        <form method="post" action="{{ url_for('panel.update_order_status', order_id=order.id) }}">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nou status</label>
+            <select name="status" class="form-select">
+              {% set labels = {'pending': 'În așteptare', 'processing': 'În procesare',
+                               'shipped': 'Expediat', 'delivered': 'Livrat', 'cancelled': 'Anulat'} %}
+              {% for s in statuses %}
+              <option value="{{ s }}" {{ 'selected' if s == order.status }}>
+                {{ labels.get(s, s) }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Note tracking <span class="text-muted fw-normal small">(opțional)</span></label>
+            <textarea name="tracking_notes" class="form-control" rows="3"
+                      placeholder="ex: Expediat cu Fan Courier, AWB 123456…">{{ order.tracking_notes or '' }}</textarea>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-check-lg me-2"></i>Actualizează
+          </button>
+        </form>
+      </div>
+    </div>
+    <a href="{{ url_for('panel.orders') }}" class="btn btn-outline-secondary w-100 mt-3">
+      <i class="bi bi-arrow-left me-1"></i>Înapoi la comenzi
+    </a>
+  </div>
+</div>
+{% endblock %}

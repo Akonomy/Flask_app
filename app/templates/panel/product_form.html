@@ -1,0 +1,199 @@
+{% extends 'panel/base.html' %}
+{% block title %}{{ 'Editează' if action == 'edit' else 'Adaugă' }} produs{% endblock %}
+{% block panel_title %}{{ 'Editează' if action == 'edit' else 'Adaugă' }} produs{% endblock %}
+
+{% set errors = errors or {} %}
+{% set fd = form_data %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-9">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data" novalidate>
+
+          <div class="row g-3">
+            <!-- Name -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                Nume produs <span class="text-danger">*</span>
+              </label>
+              <input type="text" name="name"
+                     class="form-control {% if errors.name %}is-invalid{% endif %}" required
+                     value="{{ fd.get('name', '') if fd else (product.name if product else '') }}"
+                     placeholder="Introdu numele produsului">
+              {% if errors.name %}
+              <div class="invalid-feedback">{{ errors.name }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Price -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                Preț (coins) <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <input type="number" name="price" min="1"
+                       class="form-control {% if errors.price %}is-invalid{% endif %}" required
+                       value="{{ fd.get('price', '') if fd else (product.price if product else '') }}"
+                       placeholder="100">
+                <span class="input-group-text"><i class="bi bi-coin text-warning"></i></span>
+                {% if errors.price %}
+                <div class="invalid-feedback">{{ errors.price }}</div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Stock -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                Stoc <span class="text-danger">*</span>
+              </label>
+              <input type="number" name="stock" min="0"
+                     class="form-control {% if errors.stock %}is-invalid{% endif %}" required
+                     value="{{ fd.get('stock', 0) if fd else (product.stock if product else 0) }}">
+              {% if errors.stock %}
+              <div class="invalid-feedback">{{ errors.stock }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Weight -->
+            <div class="col-md-4">
+              <label class="form-label fw-semibold">
+                Greutate (g) <span class="text-muted fw-normal small">(opțional)</span>
+              </label>
+              <input type="number" name="weight_g" min="1" class="form-control"
+                     value="{{ fd.get('weight_g', '') if fd else (product.weight_g if product and product.weight_g else '') }}"
+                     placeholder="200 (default)">
+              <div class="form-text">Lasă gol pentru default după categorie.</div>
+            </div>
+
+            <!-- Category -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                Categorie <span class="text-muted fw-normal small">(opțional)</span>
+              </label>
+              <input type="text" name="category" class="form-control" id="categoryInput"
+                     list="categorySuggestions" autocomplete="off"
+                     value="{{ fd.get('category', '') if fd else (product.category if product and product.category else '') }}"
+                     placeholder="ex: Electronice, Îmbrăcăminte…">
+              <datalist id="categorySuggestions"></datalist>
+            </div>
+
+            <!-- Image file -->
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">
+                Imagine — fișier <span class="text-muted fw-normal small">(opțional)</span>
+              </label>
+              {% if product and product.image_filename %}
+              <div class="mb-2">
+                <img src="{{ product.image_url }}" alt="Imagine curentă"
+                     class="rounded border" style="height:60px;object-fit:cover">
+                <div class="form-text">Încarcă o nouă imagine pentru a o înlocui.</div>
+              </div>
+              {% endif %}
+              <input type="file" name="image" class="form-control"
+                     accept=".png,.jpg,.jpeg,.gif,.webp">
+              <div class="form-text">PNG, JPG, GIF, WEBP. Max 16MB.</div>
+            </div>
+
+            <!-- Image URL -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                Imagine — URL extern <span class="text-muted fw-normal small">(opțional, alternativă la fișier)</span>
+              </label>
+              <div class="input-group">
+                <input type="url" name="image_url_external" class="form-control" id="imageUrlInput"
+                       value="{{ fd.get('image_url_external', '') if fd else (product.image_url_external if product and product.image_url_external else '') }}"
+                       placeholder="https://picsum.photos/seed/…/300/200">
+                <button type="button" class="btn btn-outline-secondary" id="suggestImgBtn">
+                  <i class="bi bi-image me-1"></i>Sugerează
+                </button>
+                <button type="button" class="btn btn-outline-info" id="previewImgBtn">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+              <div id="imgPreview" class="mt-2" style="display:none">
+                <img id="imgPreviewEl" src="" alt="Preview" class="rounded border"
+                     style="max-height:120px;object-fit:cover">
+              </div>
+              {% if product and product.image_url_external and not product.image_filename %}
+              <div class="mt-1">
+                <img src="{{ product.image_url_external }}" alt="URL curent" class="rounded border"
+                     style="height:60px;object-fit:cover">
+              </div>
+              {% endif %}
+              <div class="form-text">Dacă e completat și nu e fișier, se folosește URL-ul extern.</div>
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+              <label class="form-label fw-semibold">
+                Descriere <span class="text-muted fw-normal small">(opțional)</span>
+              </label>
+              <textarea name="description" class="form-control" rows="4"
+                        placeholder="Descriere detaliată a produsului…">{{ fd.get('description', '') if fd else (product.description if product and product.description else '') }}</textarea>
+            </div>
+
+            <!-- Active -->
+            <div class="col-12">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" name="is_active"
+                       id="isActive" role="switch"
+                       {% if fd %}{{ 'checked' if fd.get('is_active') }}
+                       {% else %}{{ 'checked' if not product or product.is_active }}{% endif %}>
+                <label class="form-check-label fw-semibold" for="isActive">
+                  Produs activ (vizibil pentru clienți)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-primary px-4">
+              <i class="bi bi-check-lg me-2"></i>
+              {{ 'Salvează modificările' if action == 'edit' else 'Adaugă produsul' }}
+            </button>
+            <a href="{{ url_for('panel.products') }}" class="btn btn-outline-secondary">
+              <i class="bi bi-x me-1"></i>Anulează
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Populate category datalist from API
+fetch('{{ url_for("products.categories_json") }}')
+  .then(r => r.json()).then(cats => {
+    const dl = document.getElementById('categorySuggestions');
+    dl.innerHTML = cats.map(c => `<option value="${c}">`).join('');
+  }).catch(() => {});
+
+// Preview image URL
+document.getElementById('previewImgBtn').addEventListener('click', function() {
+  const url = document.getElementById('imageUrlInput').value.trim();
+  if (!url) return;
+  document.getElementById('imgPreviewEl').src = url;
+  document.getElementById('imgPreview').style.display = 'block';
+});
+
+// Suggest Picsum image based on name/category
+document.getElementById('suggestImgBtn').addEventListener('click', function() {
+  const nameVal = document.querySelector('input[name="name"]').value.trim();
+  const catVal = document.getElementById('categoryInput').value.trim();
+  const base = (nameVal || catVal || 'product').toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10);
+  const seed = base + Math.floor(Math.random() * 999);
+  const url = `https://picsum.photos/seed/${seed}/300/200`;
+  document.getElementById('imageUrlInput').value = url;
+  document.getElementById('imgPreviewEl').src = url;
+  document.getElementById('imgPreview').style.display = 'block';
+});
+</script>
+{% endblock %}
